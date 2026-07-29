@@ -1,0 +1,68 @@
+rules_version = '2';
+
+// ============================================================
+//  Gestão de banca — regras do Cloud Firestore
+//  Princípio: cada pessoa só enxerga e só escreve na própria conta.
+//  Sem login não existe leitura nem escrita de nada.
+// ============================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function owner(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    // trava de tamanho: nenhum documento do app passa de ~60 campos
+    // request.resource é null numa exclusão — sem essa checagem, "allow write" com reasonable()
+    // barraria também os deletes (excluir operação/ciclo/método/banca, reiniciar conta).
+    function reasonable() {
+      return request.resource == null || request.resource.data.size() <= 60;
+    }
+
+    // Documento raiz da conta: banca ativa, preferências, times e competições
+    match /users/{uid} {
+      allow get, list: if owner(uid);
+      allow create, update: if owner(uid) && reasonable();
+      allow delete: if owner(uid);
+
+      // Coleções de dados: operações, ciclos, métodos e bancas
+      match /{col}/{docId} {
+        allow read: if owner(uid);
+        allow write: if owner(uid)
+                     && col in ['ops', 'cycles', 'methods', 'bancas']
+                     && reasonable();
+      }
+    }
+
+    // Qualquer outro caminho fica bloqueado.
+    // (O Firestore já nega por padrão; isto é só para deixar explícito.)
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+
+// ------------------------------------------------------------
+// OPCIONAL — validação mais rígida das operações.
+// Se quiser usar, troque o bloco `match /{col}/{docId}` acima por este:
+//
+//   match /ops/{docId} {
+//     allow read: if owner(uid);
+//     allow write: if owner(uid) && reasonable()
+//                  && request.resource.data.pnl is number
+//                  && request.resource.data.date is string;
+//   }
+//   match /{col}/{docId} {
+//     allow read: if owner(uid);
+//     allow write: if owner(uid) && reasonable()
+//                  && col in ['cycles', 'methods', 'bancas'];
+//   }
+//
+// OPCIONAL — exigir e-mail verificado para escrever:
+//   adicione `&& request.auth.token.email_verified == true` nas regras de write.
+// ------------------------------------------------------------

@@ -1,0 +1,2222 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Gestão de banca — trade esportivo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Archivo:wght@400;500;600&family=Roboto+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0A1018; --surface:#121B28; --surface-2:#182333; --raised:#1E2B3D;
+  --line:rgba(255,255,255,.09); --line-strong:rgba(255,255,255,.16);
+  --text:#E9EEF7; --muted:#8496B0;
+  --amber:#F5B841; --amber-dim:rgba(245,184,65,.14);
+  --mint:#3DDC97; --mint-dim:rgba(61,220,151,.13);
+  --coral:#FF6B61; --coral-dim:rgba(255,107,97,.13);
+  --sky:#5AA9FF; --violet:#B48BFF; --sand:#E8A76A;
+  --radius:14px;
+  --display:'Barlow Condensed',system-ui,sans-serif;
+  --body:'Archivo',system-ui,-apple-system,sans-serif;
+  --mono:'Roboto Mono',ui-monospace,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:radial-gradient(1100px 480px at 78% -160px,rgba(245,184,65,.10),transparent 62%),
+             radial-gradient(900px 420px at 5% -120px,rgba(61,220,151,.07),transparent 60%),var(--ink);
+  color:var(--text);font-family:var(--body);font-size:15px;line-height:1.5;min-height:100vh;-webkit-text-size-adjust:100%;
+}
+h1,h2,h3,h4{font-family:var(--display);font-weight:600;letter-spacing:.02em;margin:0;text-transform:uppercase}
+button{font-family:inherit}
+.mono,.num{font-family:var(--mono);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.pos{color:var(--mint)} .neg{color:var(--coral)} .dim{color:var(--muted)}
+
+/* topbar */
+.topbar{position:sticky;top:0;z-index:40;display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+  padding:10px 18px;background:rgba(10,16,24,.85);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:center;gap:10px}
+.mark{width:32px;height:32px;display:grid;place-items:center;flex:none;border-radius:9px;background:var(--amber);
+  color:#151005;font-family:var(--display);font-size:19px;font-weight:700;line-height:1}
+.brand b{display:block;font-family:var(--display);font-size:20px;letter-spacing:.13em;line-height:1}
+.brand small{display:block;color:var(--muted);font-size:9.5px;letter-spacing:.14em;text-transform:uppercase}
+.tabs{display:flex;gap:3px;background:var(--surface);padding:4px;border-radius:11px;border:1px solid var(--line);overflow-x:auto;max-width:100%}
+.tab{border:0;background:transparent;color:var(--muted);cursor:pointer;padding:7px 13px;border-radius:8px;
+  font-size:11.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;transition:.16s;white-space:nowrap}
+.tab:hover{color:var(--text)}
+.tab.is-on{background:var(--raised);color:var(--text);box-shadow:inset 0 0 0 1px var(--line-strong)}
+.topbar .right{margin-left:auto;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.pill-select{background:var(--surface-2);border:1px solid var(--line-strong);color:var(--text);border-radius:10px;
+  padding:8px 11px;font-family:var(--body);font-size:12.5px;font-weight:500;max-width:190px}
+.unit-toggle{display:flex;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:3px}
+.unit-toggle button{border:0;background:transparent;color:var(--muted);cursor:pointer;padding:6px 11px;border-radius:7px;
+  font-family:var(--mono);font-size:11.5px;font-weight:500;transition:.15s}
+.unit-toggle button.on{background:var(--raised);color:var(--amber)}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;gap:7px;cursor:pointer;border:1px solid var(--line-strong);
+  background:var(--surface-2);color:var(--text);padding:9px 15px;border-radius:10px;font-size:12.5px;font-weight:600;
+  letter-spacing:.05em;text-transform:uppercase;transition:.16s}
+.btn:hover{border-color:var(--amber);color:var(--amber)}
+.btn.primary{background:var(--amber);border-color:var(--amber);color:#171003}
+.btn.primary:hover{filter:brightness(1.08);color:#171003}
+.btn.ghost{background:transparent;border-color:var(--line)}
+.btn.sm{padding:6px 11px;font-size:11px;border-radius:8px}
+.btn.danger:hover{border-color:var(--coral);color:var(--coral)}
+.btn:focus-visible,.tab:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+.icon-btn{background:transparent;border:1px solid var(--line);color:var(--muted);border-radius:8px;width:30px;height:30px;
+  display:grid;place-items:center;cursor:pointer;font-size:13px;transition:.16s;flex:none}
+.icon-btn:hover{color:var(--text);border-color:var(--line-strong)}
+.icon-btn.danger:hover{color:var(--coral);border-color:var(--coral)}
+
+/* layout */
+main{max-width:1320px;margin:0 auto;padding:24px 18px 90px}
+.view[hidden]{display:none}
+.page-head{display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:18px}
+.page-head h1{font-size:30px}
+.page-head p{color:var(--muted);font-size:13px;margin:2px 0 0;max-width:66ch}
+.eyebrow{color:var(--amber);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;font-weight:600;font-family:var(--body)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px}
+.grid{display:grid;gap:14px}
+.section-title{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.section-title h3{font-size:17px;letter-spacing:.09em}
+.empty{border:1px dashed var(--line-strong);border-radius:var(--radius);padding:40px 22px;text-align:center;color:var(--muted)}
+.empty strong{display:block;color:var(--text);font-family:var(--display);font-size:21px;letter-spacing:.03em;margin-bottom:6px;text-transform:uppercase}
+.chip{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;border-radius:99px;font-size:10.5px;
+  letter-spacing:.08em;text-transform:uppercase;font-weight:600;border:1px solid var(--line-strong);color:var(--muted)}
+.chip.on{background:var(--amber-dim);border-color:transparent;color:var(--amber)}
+.chip.win{background:var(--mint-dim);border-color:transparent;color:var(--mint)}
+.chip.loss{background:var(--coral-dim);border-color:transparent;color:var(--coral)}
+.chip.warn{background:rgba(232,167,106,.15);border-color:transparent;color:var(--sand)}
+
+/* kpis */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--line);
+  border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;margin-bottom:16px}
+.stat{background:var(--surface);padding:14px 16px}
+.stat small{display:block;color:var(--muted);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;margin-bottom:5px}
+.stat b{font-family:var(--mono);font-size:19px;font-weight:500;letter-spacing:-.02em;display:block}
+.stat .sub{font-size:11px;color:var(--muted);font-family:var(--mono);margin-top:2px}
+
+/* bar */
+.bar{height:6px;border-radius:99px;background:var(--raised);overflow:hidden}
+.bar>i{display:block;height:100%;background:linear-gradient(90deg,var(--mint),var(--amber));border-radius:99px;transition:width .4s}
+
+/* forms */
+.field{display:block;margin-bottom:12px}
+.field>span{display:block;font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+input,select,textarea{width:100%;background:var(--ink);border:1px solid var(--line-strong);color:var(--text);
+  border-radius:10px;padding:10px 12px;font-family:var(--body);font-size:14px}
+input.num-in{font-family:var(--mono)}
+textarea{resize:vertical;min-height:80px;line-height:1.55}
+.row{display:grid;gap:10px}
+.row.c2{grid-template-columns:1fr 1fr}
+.row.c3{grid-template-columns:1fr 1fr 1fr}
+.hint{color:var(--muted);font-size:11.5px;margin-top:-6px;margin-bottom:12px}
+.seg{display:flex;gap:6px;margin-bottom:12px}
+.seg button{flex:1;cursor:pointer;border:1px solid var(--line-strong);background:var(--ink);color:var(--muted);
+  padding:9px 6px;border-radius:10px;font-size:11.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;transition:.15s}
+.seg button[aria-pressed=true][data-r=green]{background:var(--mint-dim);border-color:var(--mint);color:var(--mint)}
+.seg button[aria-pressed=true][data-r=red]{background:var(--coral-dim);border-color:var(--coral);color:var(--coral)}
+.seg button[aria-pressed=true][data-r=void]{background:var(--raised);border-color:var(--line-strong);color:var(--text)}
+.vs{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:end}
+.vs .x{font-family:var(--display);color:var(--muted);padding-bottom:11px;font-size:15px}
+
+/* filters */
+.filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.filters select,.filters input{width:auto;min-width:120px;padding:8px 10px;font-size:12.5px;border-radius:9px}
+
+/* table */
+.table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:700px}
+th{font-family:var(--body);font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);
+  text-align:right;padding:0 10px 9px;font-weight:600;white-space:nowrap}
+th:first-child,td:first-child,th.l,td.l{text-align:left}
+td{padding:9px 10px;border-top:1px solid var(--line);text-align:right;white-space:nowrap}
+tbody tr.clickable{cursor:pointer}
+tbody tr:hover{background:rgba(255,255,255,.03)}
+td.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+td .game{font-weight:500}
+td .comp{color:var(--muted);font-size:11px;display:block}
+.sep-row td{background:var(--surface-2);border-top:1px solid var(--line-strong);font-family:var(--display);
+  font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--amber);padding:7px 10px}
+
+/* charts */
+.chart-box{position:relative;height:280px}
+.chart-box.sm{height:200px}
+canvas{width:100%;height:100%;display:block}
+.chart-tools{display:flex;gap:6px;flex-wrap:wrap}
+.mini-toggle{display:flex;background:var(--surface-2);border:1px solid var(--line);border-radius:9px;padding:3px}
+.mini-toggle button{border:0;background:transparent;color:var(--muted);cursor:pointer;padding:5px 10px;border-radius:6px;
+  font-size:10.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;transition:.15s}
+.mini-toggle button.on{background:var(--raised);color:var(--text)}
+
+/* ranking */
+.rank{display:grid;gap:9px}
+.rank-row{display:grid;grid-template-columns:1fr 96px;gap:10px;align-items:center;cursor:default}
+.rank-row .lbl{font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rank-row .lbl small{color:var(--muted);font-size:10.5px;margin-left:6px}
+.rank-row .val{font-family:var(--mono);font-size:13px;text-align:right}
+.rank-bar{grid-column:1/-1;height:5px;border-radius:99px;background:var(--raised);overflow:hidden;margin-top:-4px}
+.rank-bar>i{display:block;height:100%;border-radius:99px}
+
+/* calendar */
+.cal-head{display:flex;align-items:center;gap:10px;justify-content:space-between;margin-bottom:14px}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+.cal-dow{text-align:center;font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);padding-bottom:4px}
+.cal-day{aspect-ratio:1;border-radius:10px;border:1px solid var(--line);background:var(--surface-2);padding:6px;
+  display:flex;flex-direction:column;justify-content:space-between;cursor:pointer;transition:.15s;min-height:58px}
+.cal-day.void{opacity:.25;cursor:default;border-style:dashed;background:transparent}
+.cal-day:hover:not(.void){border-color:var(--line-strong)}
+.cal-day.sel{outline:2px solid var(--amber);outline-offset:1px}
+.cal-day .d{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.cal-day .v{font-family:var(--mono);font-size:11.5px;font-weight:500;line-height:1.15;word-break:break-all}
+.cal-day .n{font-size:9px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+.cal-day.win{background:linear-gradient(180deg,rgba(61,220,151,.16),rgba(61,220,151,.05));border-color:rgba(61,220,151,.35)}
+.cal-day.loss{background:linear-gradient(180deg,rgba(255,107,97,.16),rgba(255,107,97,.05));border-color:rgba(255,107,97,.32)}
+.cal-legend{display:flex;gap:14px;flex-wrap:wrap;color:var(--muted);font-size:11.5px;margin-top:12px}
+
+/* rail (ciclos) */
+.rail{position:relative;padding:20px 16px 14px;margin-bottom:16px;background:var(--surface);border:1px solid var(--line);
+  border-radius:var(--radius);overflow-x:auto}
+.rail-track{display:flex;align-items:stretch;min-width:min-content;position:relative}
+.station{position:relative;flex:1 1 0;min-width:130px;padding:0 4px}
+.station .dot{width:15px;height:15px;border-radius:50%;background:var(--raised);border:2px solid var(--line-strong);
+  position:relative;z-index:2;margin:0 auto 12px;transition:.2s}
+.station .rail-line{position:absolute;top:6.5px;height:2px;background:var(--raised);left:0;right:0;z-index:1}
+.station:first-child .rail-line{left:50%}
+.station:last-child .rail-line{right:50%}
+.station.done .dot{background:var(--mint);border-color:var(--mint);box-shadow:0 0 0 4px var(--mint-dim)}
+.station.done .rail-line{background:var(--mint)}
+.station.now .dot{background:var(--amber);border-color:var(--amber);box-shadow:0 0 0 5px var(--amber-dim)}
+.station-body{text-align:center;padding:0 6px}
+.station-body .lbl{font-family:var(--display);font-size:16px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.station.now .lbl,.station.done .lbl{color:var(--text)}
+.station-body .val{font-family:var(--mono);font-size:12px;color:var(--muted);margin-top:2px}
+.station-body .take{font-family:var(--mono);font-size:12px;color:var(--mint);margin-top:4px}
+.station .bar{margin-top:8px}
+.next-target{background:var(--surface-2);border:1px solid var(--line-strong);border-radius:12px;padding:13px 15px;margin-bottom:14px}
+.next-target .t{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.next-target .t b{font-family:var(--mono);font-size:23px;color:var(--amber);font-weight:500}
+.next-target .t span{font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted)}
+.next-target .sub{color:var(--muted);font-size:12px;margin-top:4px;font-family:var(--mono)}
+.method-note{color:var(--muted);font-size:13px;max-width:62ch;margin-top:8px;border-left:2px solid var(--amber);padding-left:12px;white-space:pre-wrap}
+
+/* lists */
+.list-item{display:flex;align-items:flex-start;gap:14px;padding:14px 0;border-top:1px solid var(--line)}
+.list-item:first-child{border-top:0}
+.list-item h4{font-size:18px}
+.list-item p{margin:4px 0 0;color:var(--muted);font-size:13px;white-space:pre-wrap}
+.tag-cloud{display:flex;flex-wrap:wrap;gap:7px}
+.tag{display:inline-flex;align-items:center;gap:7px;background:var(--surface-2);border:1px solid var(--line);
+  border-radius:99px;padding:6px 8px 6px 13px;font-size:13px}
+.tag button{background:none;border:0;color:var(--muted);cursor:pointer;font-size:14px;line-height:1;padding:0 2px}
+.tag button:hover{color:var(--coral)}
+.cycles-grid{grid-template-columns:repeat(auto-fill,minmax(280px,1fr))}
+.cycle-card{position:relative;cursor:pointer;transition:.18s}
+.cycle-card:hover{border-color:var(--line-strong);transform:translateY(-2px)}
+.cycle-card h3{font-size:20px;line-height:1.1}
+.cycle-card .meta{color:var(--muted);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;margin-top:3px}
+.figures{display:flex;gap:16px;margin:14px 0 10px;flex-wrap:wrap}
+.fig small{display:block;color:var(--muted);font-size:9.5px;letter-spacing:.12em;text-transform:uppercase}
+.fig span{font-family:var(--mono);font-size:15px;font-weight:500}
+.card-actions{display:flex;gap:6px;position:absolute;top:14px;right:14px;opacity:0;transition:.16s}
+.cycle-card:hover .card-actions,.cycle-card:focus-within .card-actions{opacity:1}
+
+/* dialog */
+dialog{border:1px solid var(--line-strong);background:var(--surface);color:var(--text);border-radius:16px;padding:0;
+  width:min(620px,95vw);box-shadow:0 30px 80px rgba(0,0,0,.6)}
+dialog::backdrop{background:rgba(5,9,14,.74);backdrop-filter:blur(3px)}
+.dlg-head{padding:16px 20px 12px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.dlg-head h3{font-size:21px}
+.dlg-body{padding:18px 20px;max-height:68vh;overflow:auto}
+.dlg-foot{padding:14px 20px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+.kv{display:grid;grid-template-columns:130px 1fr;gap:8px 14px;font-size:13.5px}
+.kv dt{color:var(--muted);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;padding-top:3px}
+.kv dd{margin:0}
+
+#toast{position:fixed;left:50%;bottom:26px;transform:translate(-50%,20px);z-index:99;background:var(--raised);
+  border:1px solid var(--line-strong);border-radius:11px;padding:11px 18px;font-size:13px;opacity:0;pointer-events:none;transition:.25s}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media(max-width:980px){
+  .two-col{grid-template-columns:1fr!important}
+  main{padding:16px 12px 80px}
+  .page-head h1{font-size:26px}
+  .cal-day{min-height:48px;padding:4px}
+  .cal-day .v{font-size:10px}
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <span class="mark">G</span>
+    <div><b>BANCA</b><small>trade esportivo</small></div>
+  </div>
+  <nav class="tabs" id="tabs">
+    <button class="tab is-on" data-view="dash">Painel</button>
+    <button class="tab" data-view="ops">Operações</button>
+    <button class="tab" data-view="cycles">Ciclos</button>
+    <button class="tab" data-view="reports">Relatórios</button>
+    <button class="tab" data-view="calendar">Calendário</button>
+    <button class="tab" data-view="methods">Métodos</button>
+    <button class="tab" data-view="registry">Cadastros</button>
+  </nav>
+  <div class="right">
+    <select class="pill-select" id="bancaSel" title="Banca ativa"></select>
+    <div class="unit-toggle" id="unitToggle" title="Como exibir os resultados">
+      <button data-u="money" class="on">R$</button>
+      <button data-u="pct">%</button>
+      <button data-u="un">u</button>
+    </div>
+    <button class="btn ghost sm" id="btnExport">Exportar</button>
+    <button class="btn ghost sm" id="btnImport">Importar</button>
+    <input type="file" id="fileImport" accept="application/json" hidden>
+  </div>
+</header>
+
+<main>
+
+<!-- ================= PAINEL ================= -->
+<section class="view" id="view-dash">
+  <div class="page-head">
+    <div>
+      <span class="eyebrow">Painel</span>
+      <h1 id="dashTitle">Banca</h1>
+      <p id="dashSub">Tudo que você registra — dentro ou fora de ciclo — entra nesta conta.</p>
+    </div>
+    <button class="btn primary" data-newop style="margin-left:auto">+ Nova operação</button>
+  </div>
+
+  <div class="stats" id="dashStats"></div>
+
+  <div class="grid two-col" style="grid-template-columns:1fr 380px;align-items:start">
+    <div class="grid" style="gap:14px">
+      <div class="card">
+        <div class="section-title">
+          <h3>Evolução</h3>
+          <div class="chart-tools">
+            <div class="mini-toggle" id="dashPeriod">
+              <button data-p="day" class="on">Dia</button>
+              <button data-p="week">Semana</button>
+              <button data-p="month">Mês</button>
+              <button data-p="year">Ano</button>
+            </div>
+            <div class="mini-toggle" id="dashSeries">
+              <button data-s="both" class="on">Barras + linha</button>
+              <button data-s="bars">Só barras</button>
+              <button data-s="line">Só linha</button>
+            </div>
+          </div>
+        </div>
+        <div class="chart-box"><canvas id="dashChart"></canvas></div>
+      </div>
+
+      <div class="card">
+        <div class="section-title"><h3>Comparativo de métodos</h3><span class="chip" id="cmpChip">acumulado</span></div>
+        <div class="chart-box sm"><canvas id="cmpChart"></canvas></div>
+        <div id="cmpLegend" style="display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;font-size:12px"></div>
+      </div>
+
+      <div class="card">
+        <div class="section-title"><h3>Últimas operações</h3><button class="btn ghost sm" data-goto="ops">Ver todas</button></div>
+        <div class="table-wrap"><table id="dashOps"><tbody></tbody></table></div>
+      </div>
+    </div>
+
+    <div class="grid" style="gap:14px">
+      <div class="card">
+        <div class="section-title"><h3>Disciplina</h3><span class="chip" id="discChip"></span></div>
+        <div id="discBox"></div>
+      </div>
+      <div class="card">
+        <div class="section-title"><h3>Top métodos</h3></div>
+        <div class="rank" id="rankMethods"></div>
+      </div>
+      <div class="card">
+        <div class="section-title"><h3>Times</h3><span class="chip">melhores e piores</span></div>
+        <div class="rank" id="rankTeams"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= OPERAÇÕES ================= -->
+<section class="view" id="view-ops" hidden>
+  <div class="page-head">
+    <div>
+      <span class="eyebrow">Registro</span>
+      <h1>Operações</h1>
+      <p>Todas as entradas da banca. As que pertencem a um ciclo aparecem marcadas.</p>
+    </div>
+    <button class="btn primary" data-newop style="margin-left:auto">+ Nova operação</button>
+  </div>
+
+  <div class="filters" id="opsFilters">
+    <select id="fltPeriod">
+      <option value="all">Todo o período</option>
+      <option value="7">Últimos 7 dias</option>
+      <option value="30">Últimos 30 dias</option>
+      <option value="90">Últimos 90 dias</option>
+      <option value="month">Este mês</option>
+      <option value="year">Este ano</option>
+    </select>
+    <select id="fltMethod"></select>
+    <select id="fltComp"></select>
+    <select id="fltResult">
+      <option value="all">Todos os resultados</option>
+      <option value="green">Green</option>
+      <option value="red">Red</option>
+      <option value="void">Anulada</option>
+    </select>
+    <select id="fltScope">
+      <option value="all">Ciclo e avulsas</option>
+      <option value="cycle">Só de ciclos</option>
+      <option value="free">Só avulsas</option>
+      <option value="off">Só fora do método</option>
+    </select>
+    <input id="fltText" placeholder="Buscar time, obs...">
+    <button class="btn ghost sm" id="fltClear">Limpar</button>
+  </div>
+
+  <div class="stats" id="opsStats"></div>
+
+  <div class="card">
+    <div class="table-wrap">
+      <table id="tblOps">
+        <thead><tr>
+          <th class="l">Data</th><th class="l">Jogo</th><th class="l">Método</th>
+          <th>Stake</th><th>Resultado</th><th>ROI</th><th>Acumulado</th><th></th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div id="opsEmpty" class="empty" hidden><strong>Nenhuma operação</strong>Registre a primeira entrada desta banca.</div>
+  </div>
+</section>
+
+<!-- ================= CICLOS ================= -->
+<section class="view" id="view-cycles" hidden>
+  <div class="page-head">
+    <div>
+      <span class="eyebrow">Método dos ciclos</span>
+      <h1>Ciclos</h1>
+      <p>Cada ciclo dobra seu valor em etapas. Ao dobrar, saca e recomeça.</p>
+    </div>
+    <button class="btn primary" id="btnNewCycle" style="margin-left:auto">+ Novo ciclo</button>
+  </div>
+  <div id="cyclesList"></div>
+</section>
+
+<!-- ================= CICLO (detalhe) ================= -->
+<section class="view" id="view-cycle" hidden>
+  <div class="page-head">
+    <button class="btn ghost sm" id="btnBack">← Ciclos</button>
+    <div style="flex:1 1 280px">
+      <span class="eyebrow" id="dMethodName">Método</span>
+      <h1 id="dTitle">—</h1>
+      <div id="dMethodDef" class="method-note" hidden></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-left:auto">
+      <button class="btn ghost sm" id="btnEditCycle">Editar</button>
+      <button class="btn ghost sm danger" id="btnDeleteCycle">Excluir</button>
+    </div>
+  </div>
+
+  <div class="stats" id="dStats"></div>
+
+  <div class="rail">
+    <div style="font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:14px">
+      Trilha dos ciclos — cada parada é um saque
+    </div>
+    <div class="rail-track" id="dRail"></div>
+  </div>
+
+  <div class="grid two-col" style="grid-template-columns:330px 1fr;align-items:start">
+    <div class="card">
+      <div class="section-title"><h3>Próxima entrada</h3></div>
+      <div class="next-target" id="nextTarget"></div>
+      <button class="btn primary" id="btnCycleOp" style="width:100%;justify-content:center">+ Registrar entrada</button>
+      <div class="hint" style="margin-top:12px;margin-bottom:0">A entrada entra também nas operações da banca e nos relatórios.</div>
+    </div>
+
+    <div class="grid" style="gap:14px">
+      <div class="card">
+        <div class="section-title"><h3>Evolução da banca do ciclo</h3><span class="chip" id="chipChart"></span></div>
+        <div class="chart-box"><canvas id="cycleChart"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="section-title"><h3>Entradas</h3><span class="chip" id="chipEntries"></span></div>
+        <div class="table-wrap">
+          <table id="tblEntries">
+            <thead><tr><th class="l">#</th><th class="l">Jogo</th><th>Data</th><th>Alvo</th>
+            <th>Banca antes</th><th>Resultado</th><th>Banca depois</th><th></th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <div id="entriesEmpty" class="empty" hidden><strong>Sem entradas ainda</strong>Registre a primeira para abrir o ciclo 1.</div>
+      </div>
+      <div class="card">
+        <div class="section-title"><h3>Fechamento por ciclo</h3></div>
+        <div class="table-wrap">
+          <table id="tblSubs">
+            <thead><tr><th class="l">Ciclo</th><th>Início</th><th>Entradas</th><th>Lucro</th>
+            <th>Montante</th><th>Saque</th><th>Segue com</th><th class="l">Status</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= RELATÓRIOS ================= -->
+<section class="view" id="view-reports" hidden>
+  <div class="page-head">
+    <div>
+      <span class="eyebrow">Análise</span>
+      <h1>Relatórios</h1>
+      <p>O que dá lucro, o que dá prejuízo e quanto a indisciplina custou.</p>
+    </div>
+    <div class="mini-toggle" id="repPeriod" style="margin-left:auto">
+      <button data-p="all" class="on">Tudo</button>
+      <button data-p="30">30d</button>
+      <button data-p="90">90d</button>
+      <button data-p="year">Ano</button>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:14px">
+    <div class="section-title"><h3>Se você tivesse seguido o método</h3><span class="chip warn" id="repDiscChip"></span></div>
+    <div id="repDisc"></div>
+  </div>
+
+  <div class="card" style="margin-bottom:14px">
+    <div class="section-title"><h3>Por método</h3><span class="chip">ROI sobre a stake</span></div>
+    <div class="table-wrap">
+      <table id="tblRepMethods">
+        <thead><tr><th class="l">Método</th><th>Ops</th><th>Acerto</th><th>Stake total</th>
+        <th>Resultado</th><th>ROI</th><th>Unidades</th><th>Fora do método</th><th>Se disciplinado</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div class="chart-box sm" style="margin-top:16px"><canvas id="repMethodChart"></canvas></div>
+  </div>
+
+  <div class="grid two-col" style="grid-template-columns:1fr 1fr">
+    <div class="card">
+      <div class="section-title"><h3>Por competição</h3></div>
+      <div class="table-wrap"><table id="tblRepComps" style="min-width:520px">
+        <thead><tr><th class="l">Competição</th><th>Ops</th><th>Acerto</th><th>Resultado</th><th>ROI</th></tr></thead>
+        <tbody></tbody></table></div>
+    </div>
+    <div class="card">
+      <div class="section-title"><h3>Por time</h3><span class="chip" id="teamModeChip">mandante + visitante</span></div>
+      <div class="table-wrap"><table id="tblRepTeams" style="min-width:520px">
+        <thead><tr><th class="l">Time</th><th>Ops</th><th>Acerto</th><th>Resultado</th><th>ROI</th></tr></thead>
+        <tbody></tbody></table></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= CALENDÁRIO ================= -->
+<section class="view" id="view-calendar" hidden>
+  <div class="page-head">
+    <div>
+      <span class="eyebrow">Rotina</span>
+      <h1>Calendário</h1>
+      <p>Resultado dia a dia. Clique em um dia para ver as operações.</p>
+    </div>
+  </div>
+  <div class="grid two-col" style="grid-template-columns:1fr 380px;align-items:start">
+    <div class="card">
+      <div class="cal-head">
+        <button class="icon-btn" id="calPrev">‹</button>
+        <h3 id="calLabel" style="font-size:19px">—</h3>
+        <button class="icon-btn" id="calNext">›</button>
+      </div>
+      <div class="cal-grid" id="calDow"></div>
+      <div class="cal-grid" id="calGrid" style="margin-top:5px"></div>
+      <div class="cal-legend">
+        <span><i style="display:inline-block;width:10px;height:10px;border-radius:3px;background:rgba(61,220,151,.4);margin-right:5px"></i>dia positivo</span>
+        <span><i style="display:inline-block;width:10px;height:10px;border-radius:3px;background:rgba(255,107,97,.4);margin-right:5px"></i>dia negativo</span>
+        <span id="calMonthSum" class="mono"></span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="section-title"><h3 id="calDayTitle">Selecione um dia</h3></div>
+      <div id="calDayBox"><div class="empty" style="border:0;padding:24px 0">Clique em um dia com operações.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= MÉTODOS ================= -->
+<section class="view" id="view-methods" hidden>
+  <div class="page-head">
+    <div>
+      <span class="eyebrow">Biblioteca</span>
+      <h1>Métodos</h1>
+      <p>Cada método define sua stake padrão. Entradas acima disso são marcadas como fora do método.</p>
+    </div>
+    <button class="btn primary" id="btnNewMethod" style="margin-left:auto">+ Novo método</button>
+  </div>
+  <div class="card" id="methodsList"></div>
+</section>
+
+<!-- ================= CADASTROS ================= -->
+<section class="view" id="view-registry" hidden>
+  <div class="page-head">
+    <div>
+      <span class="eyebrow">Base</span>
+      <h1>Cadastros</h1>
+      <p>Bancas, times e competições. O que você digita nas operações é salvo aqui automaticamente.</p>
+    </div>
+  </div>
+  <div class="card" style="margin-bottom:14px">
+    <div class="section-title"><h3>Bancas</h3><button class="btn ghost sm" id="btnNewBanca">+ Nova banca</button></div>
+    <div id="bancasList"></div>
+  </div>
+  <div class="grid two-col" style="grid-template-columns:1fr 1fr">
+    <div class="card">
+      <div class="section-title"><h3>Times</h3><button class="btn ghost sm" data-add="teams">+ Adicionar</button></div>
+      <div class="tag-cloud" id="teamsCloud"></div>
+    </div>
+    <div class="card">
+      <div class="section-title"><h3>Competições</h3><button class="btn ghost sm" data-add="comps">+ Adicionar</button></div>
+      <div class="tag-cloud" id="compsCloud"></div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<datalist id="dlTeams"></datalist>
+<datalist id="dlComps"></datalist>
+
+<!-- ============ DIÁLOGO: OPERAÇÃO ============ -->
+<dialog id="dlgOp">
+  <form method="dialog" id="opForm">
+    <div class="dlg-head"><h3 id="dlgOpTitle">Nova operação</h3><span class="chip" id="opCycleChip" hidden></span></div>
+    <div class="dlg-body">
+      <div id="opCycleTarget"></div>
+      <div class="row c2">
+        <label class="field"><span>Data</span><input type="date" id="oDate" required></label>
+        <label class="field"><span>Método</span><select id="oMethod"></select></label>
+      </div>
+      <div class="vs">
+        <label class="field" style="margin:0"><span>Time mandante</span><input id="oTeamA" list="dlTeams" placeholder="Ex.: Bahia"></label>
+        <span class="x">×</span>
+        <label class="field" style="margin:0"><span>Time visitante</span><input id="oTeamB" list="dlTeams" placeholder="Ex.: Vitória"></label>
+      </div>
+      <label class="field" style="margin-top:12px"><span>Competição</span><input id="oComp" list="dlComps" placeholder="Ex.: Brasileirão Série A"></label>
+      <label class="field"><span>Mercado / entrada</span><input id="oMarket" placeholder="Ex.: Over 0.5 HT · lay 0x0"></label>
+
+      <label class="field"><span>Resultado</span></label>
+      <div class="seg" id="opSeg" style="margin-top:-8px">
+        <button type="button" data-r="green" aria-pressed="true">Green</button>
+        <button type="button" data-r="red" aria-pressed="false">Red</button>
+        <button type="button" data-r="void" aria-pressed="false">Anulada</button>
+      </div>
+
+      <div class="row c3">
+        <label class="field"><span>Stake (R$)</span><input id="oStake" class="num-in" inputmode="decimal" placeholder="0,00"></label>
+        <label class="field"><span>Odd (opcional)</span><input id="oOdd" class="num-in" inputmode="decimal" placeholder="2,00"></label>
+        <label class="field"><span id="oValueLbl">Lucro (R$)</span><input id="oValue" class="num-in" inputmode="decimal" placeholder="0,00"></label>
+      </div>
+      <div class="hint" id="opStakeHint"></div>
+
+      <label class="field"><span>Observação — por que entrou, por que fechou, o que errou</span>
+        <textarea id="oNote" placeholder="Ex.: entrei antes do sinal, jogo travado, fechei no 70' com prejuízo menor..."></textarea>
+      </label>
+    </div>
+    <div class="dlg-foot">
+      <button class="btn ghost danger" id="opDelete" value="delete" formnovalidate hidden>Excluir</button>
+      <button class="btn ghost" value="cancel" formnovalidate>Cancelar</button>
+      <button class="btn primary" value="ok">Salvar operação</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- ============ DIÁLOGO: DETALHE ============ -->
+<dialog id="dlgDetail">
+  <div class="dlg-head"><h3 id="detTitle">Operação</h3><span id="detBadge"></span></div>
+  <div class="dlg-body" id="detBody"></div>
+  <div class="dlg-foot">
+    <button class="btn ghost danger" id="detDelete">Excluir</button>
+    <button class="btn ghost" id="detClose">Fechar</button>
+    <button class="btn primary" id="detEdit">Editar</button>
+  </div>
+</dialog>
+
+<!-- ============ DIÁLOGO: CICLO ============ -->
+<dialog id="dlgCycle">
+  <form method="dialog" id="cycleForm">
+    <div class="dlg-head"><h3 id="dlgCycleTitle">Novo ciclo</h3></div>
+    <div class="dlg-body">
+      <label class="field"><span>Nome do ciclo</span><input id="cName" required placeholder="Ex.: Ciclo de julho"></label>
+      <label class="field"><span>Método</span><select id="cMethod"></select></label>
+      <div class="row c2">
+        <label class="field"><span>Valor inicial (R$)</span><input id="cInitial" class="num-in" inputmode="decimal" required placeholder="500,00"></label>
+        <label class="field"><span>Quantos ciclos internos</span><input id="cCount" class="num-in" type="number" min="1" max="30" step="1" required value="4"></label>
+      </div>
+      <div class="row c3">
+        <label class="field"><span>% inicial</span><input id="cPct" class="num-in" inputmode="decimal" required placeholder="5"></label>
+        <label class="field"><span>Redução por entrada (%)</span><input id="cRed" class="num-in" inputmode="decimal" placeholder="2,5"></label>
+        <label class="field"><span>% mínima</span><input id="cMin" class="num-in" inputmode="decimal" placeholder="0"></label>
+      </div>
+      <div class="hint" id="cPctPreview"></div>
+      <label class="field"><span>Saque a partir do ciclo 2 (% do montante)</span><input id="cWithdraw" class="num-in" inputmode="decimal" value="50"></label>
+      <label style="display:flex;gap:9px;align-items:center;font-size:13px;color:var(--muted);cursor:pointer">
+        <input type="checkbox" id="cReset" checked style="width:auto"> Reiniciar a % na primeira entrada de cada ciclo
+      </label>
+      <div class="hint" style="margin-top:12px">Ciclo 1 saca o valor inicial ao dobrar. Ciclos seguintes sacam a % acima. O último saca tudo.</div>
+    </div>
+    <div class="dlg-foot">
+      <button class="btn ghost" value="cancel" formnovalidate>Cancelar</button>
+      <button class="btn primary" value="ok">Salvar ciclo</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- ============ DIÁLOGO: MÉTODO ============ -->
+<dialog id="dlgMethod">
+  <form method="dialog" id="methodForm">
+    <div class="dlg-head"><h3 id="dlgMethodTitle">Novo método</h3></div>
+    <div class="dlg-body">
+      <label class="field"><span>Nome do método</span><input id="mName" required placeholder="Ex.: Lay 0x0 até 60'"></label>
+      <label class="field"><span>Definição — entrada, saída, gestão de risco</span><textarea id="mDef" placeholder="Quando entro, em que minuto, critério de saída, quando aborto..."></textarea></label>
+      <div class="row c3">
+        <label class="field"><span>Stake do método</span>
+          <select id="mStakeType">
+            <option value="fixo">Valor fixo (R$)</option>
+            <option value="pct">% da banca</option>
+            <option value="un">Unidades da banca</option>
+          </select>
+        </label>
+        <label class="field"><span id="mStakeLbl">Valor</span><input id="mStakeVal" class="num-in" inputmode="decimal" placeholder="50"></label>
+        <label class="field"><span>Tolerância (%)</span><input id="mTol" class="num-in" inputmode="decimal" value="5"></label>
+      </div>
+      <div class="hint">Acima da stake + tolerância, a operação é marcada como fora do método e entra no relatório de disciplina.</div>
+    </div>
+    <div class="dlg-foot">
+      <button class="btn ghost" value="cancel" formnovalidate>Cancelar</button>
+      <button class="btn primary" value="ok">Salvar método</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- ============ DIÁLOGO: BANCA ============ -->
+<dialog id="dlgBanca">
+  <form method="dialog" id="bancaForm">
+    <div class="dlg-head"><h3 id="dlgBancaTitle">Nova banca</h3></div>
+    <div class="dlg-body">
+      <label class="field"><span>Nome</span><input id="bName" required placeholder="Ex.: Banca principal"></label>
+      <div class="row c2">
+        <label class="field"><span>Valor inicial (R$)</span><input id="bInitial" class="num-in" inputmode="decimal" required placeholder="1000,00"></label>
+        <label class="field"><span>Stake padrão — 1 unidade (R$)</span><input id="bStake" class="num-in" inputmode="decimal" required placeholder="20,00"></label>
+      </div>
+      <div class="hint">A stake padrão vira a unidade (u) usada nos relatórios e no seletor R$ / % / u.</div>
+    </div>
+    <div class="dlg-foot">
+      <button class="btn ghost" value="cancel" formnovalidate>Cancelar</button>
+      <button class="btn primary" value="ok">Salvar banca</button>
+    </div>
+  </form>
+</dialog>
+
+<div id="toast"></div>
+
+<!-- ============================================================
+     CONFIGURAÇÃO DO FIREBASE
+     Cole aqui o objeto firebaseConfig do seu projeto
+     (Console do Firebase › Configurações do projeto › Seus apps › Web).
+     Deixe em branco para rodar 100% local, sem conta e sem nuvem.
+     ============================================================ -->
+<script>
+window.FIREBASE_CONFIG = {
+ apiKey: "AIzaSyBkkJw3xc7LpbE1FS-d48pxwAuTD12FCcA",
+  authDomain: "gereciamentotrade.firebaseapp.com",
+  projectId: "gereciamentotrade",
+  storageBucket: "gereciamentotrade.firebasestorage.app",
+  messagingSenderId: "6003784054",
+  appId: "1:6003784054:web:942d9ebf3230dea2d22257",
+  measurementId: "G-5RGTXJZZB6"
+};
+window.FIREBASE_SDK_VERSION = "12.12.0";
+</script>
+
+<script>
+/* ============================================================
+   1. ARMAZENAMENTO E MIGRAÇÃO
+   ============================================================ */
+const STORE = (()=>{ try{ localStorage.setItem('__t','1'); localStorage.removeItem('__t'); return localStorage; }
+  catch(e){ const m={}; return {getItem:k=>(k in m?m[k]:null),setItem:(k,v)=>{m[k]=String(v)},removeItem:k=>{delete m[k]}}; } })();
+const KEY='gestao.v2', OLDKEY='ciclos.v1';
+const BLANK = ()=>({ v:2, bancas:[], activeBanca:null, methods:[], ops:[], cycles:[], teams:[], comps:[], settings:{unit:'money'} });
+
+let db = boot();
+function boot(){
+  try{ const raw = STORE.getItem(KEY); if(raw) return Object.assign(BLANK(), JSON.parse(raw)); }catch(e){}
+  try{ const old = STORE.getItem(OLDKEY); if(old) return migrate(JSON.parse(old)); }catch(e){}
+  const d = BLANK();
+  d.bancas.push({id:'b'+Date.now().toString(36), name:'Banca principal', initial:1000, stake:20, createdAt:Date.now()});
+  d.activeBanca = d.bancas[0].id;
+  return d;
+}
+function migrate(old){
+  const d = BLANK();
+  const initial = (old.cycles||[]).reduce((s,c)=>s+(c.initial||0),0) || 1000;
+  const b = {id:'b'+Date.now().toString(36), name:'Banca principal', initial, stake:Math.max(10, Math.round(initial*0.02)), createdAt:Date.now()};
+  d.bancas=[b]; d.activeBanca=b.id;
+  d.methods = (old.methods||[]).map(m=>({id:m.id,name:m.name,definition:m.definition||'',stakeType:'fixo',stakeValue:0,tolerance:5}));
+  d.teams=[...(old.teams||[])]; d.comps=[...(old.comps||[])];
+  let seq = Date.now()-1e6;
+  (old.cycles||[]).forEach(c=>{
+    d.cycles.push({id:c.id,bancaId:b.id,name:c.name,methodId:c.methodId||null,initial:c.initial,count:c.count,
+      pct:c.pct,reduction:c.reduction||0,minPct:c.minPct||0,withdrawPct:c.withdrawPct??50,resetPct:c.resetPct!==false,createdAt:c.createdAt||Date.now()});
+    (c.entries||[]).forEach(e=>{
+      const parts = String(e.team||'').split(/\s+[x×X]\s+/);
+      d.ops.push({id:e.id,bancaId:b.id,cycleId:c.id,date:e.date,teamA:(parts[0]||'').trim(),teamB:(parts[1]||'').trim(),
+        comp:e.comp||'',methodId:c.methodId||null,market:e.note||'',stake:0,odd:0,result:e.result,pnl:e.value||0,note:'',seq:seq++});
+    });
+  });
+  // times separados a partir do formato antigo
+  d.ops.forEach(o=>{ [o.teamA,o.teamB].forEach(t=>{ if(t && !d.teams.some(x=>x.toLowerCase()===t.toLowerCase())) d.teams.push(t); }); });
+  d.teams.sort((a,b)=>a.localeCompare(b,'pt-BR'));
+  return d;
+}
+function save(){ STORE.setItem(KEY, JSON.stringify(db)); }
+
+/* ============================================================
+   2. UTILIDADES
+   ============================================================ */
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const money=v=>new Intl.NumberFormat('pt-BR',{style:'currency',currency:'BRL'}).format(Number(v)||0);
+const pctS=(v,d=2)=>(Number(v)||0).toLocaleString('pt-BR',{minimumFractionDigits:d,maximumFractionDigits:d})+'%';
+function parseNum(s){ if(typeof s==='number')return s; s=String(s??'').trim().replace(/[^\d.,-]/g,''); if(!s)return 0;
+  if(s.includes(','))s=s.replace(/\./g,'').replace(',','.'); const n=parseFloat(s); return isNaN(n)?0:n; }
+function toast(m){ const t=$('#toast'); t.textContent=m; t.classList.add('show'); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('show'),2200); }
+function todayISO(){ const d=new Date(); return new Date(d.getTime()-d.getTimezoneOffset()*6e4).toISOString().slice(0,10); }
+function fmtDate(s){ if(!s)return '—'; const[y,m,d]=s.split('-'); return `${d}/${m}/${y.slice(2)}`; }
+function dOf(s){ return new Date(s+'T12:00:00'); }
+const MES=['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+const MESL=['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+
+/* ---- unidade de exibição ---- */
+function banca(){ return db.bancas.find(b=>b.id===db.activeBanca) || db.bancas[0]; }
+function fmtV(v, opts={}){
+  const b=banca(), u=db.settings.unit, s=(v>0&&opts.sign!==false)?'+':'';
+  if(u==='pct') return s+pctS(b.initial? v/b.initial*100:0);
+  if(u==='un')  return s+((b.stake? v/b.stake:0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2}))+'u';
+  return (v>0&&opts.sign!==false?'+':'')+money(v);
+}
+const cls=v=>v>0?'pos':v<0?'neg':'dim';
+const un=v=>(Number(v)||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2})+'u';
+
+/* ============================================================
+   3. MOTOR: OPERAÇÕES ENRIQUECIDAS
+   ============================================================ */
+function expectedStake(m,b,bank){
+  if(!m || !(Number(m.stakeValue)>0)) return 0;
+  if(m.stakeType==='pct') return bank*m.stakeValue/100;
+  if(m.stakeType==='un')  return m.stakeValue*(b.stake||0);
+  return m.stakeValue;
+}
+function sortOps(list){ return list.slice().sort((a,b)=> a.date===b.date ? ((a.seq||0)-(b.seq||0)) : (a.date<b.date?-1:1)); }
+
+function enrich(){
+  const b=banca(); if(!b) return [];
+  const list=sortOps(db.ops.filter(o=>o.bancaId===b.id));
+  let bank=b.initial, dbank=b.initial;
+  return list.map(o=>{
+    const m=db.methods.find(x=>x.id===o.methodId)||null;
+    const exp=expectedStake(m,b,bank), stake=Number(o.stake)||0, tol=m?(Number(m.tolerance)||0):0;
+    const off = !!(m && exp>0 && stake>0 && stake > exp*(1+tol/100));
+    const adjPnl = off ? o.pnl*(exp/stake) : o.pnl;
+    const before=bank; bank+=o.pnl; dbank+=adjPnl;
+    return Object.assign({},o,{m,exp,off,adjPnl,before,after:bank,dafter:dbank,
+      roi: stake>0 ? o.pnl/stake*100 : null});
+  });
+}
+function inPeriod(list,p){
+  if(p==='all'||!p) return list;
+  const now=new Date(); let from;
+  if(p==='month') from=new Date(now.getFullYear(),now.getMonth(),1);
+  else if(p==='year') from=new Date(now.getFullYear(),0,1);
+  else { from=new Date(); from.setDate(from.getDate()-parseInt(p)); }
+  const f=new Date(from.getTime()-from.getTimezoneOffset()*6e4).toISOString().slice(0,10);
+  return list.filter(o=>o.date>=f);
+}
+function summarize(list){
+  const b=banca();
+  const pnl=list.reduce((s,o)=>s+o.pnl,0);
+  const stake=list.reduce((s,o)=>s+(Number(o.stake)||0),0);
+  const adj=list.reduce((s,o)=>s+(o.adjPnl??o.pnl),0);
+  const g=list.filter(o=>o.result==='green').length, r=list.filter(o=>o.result==='red').length;
+  let peak=-Infinity, dd=0, run=b?b.initial:0;
+  list.forEach(o=>{ run+=o.pnl; peak=Math.max(peak,run); dd=Math.min(dd, run-peak); });
+  return { n:list.length, pnl, stake, adj, greens:g, reds:r,
+    hit: (g+r)? g/(g+r)*100 : 0,
+    roi: stake? pnl/stake*100 : null,
+    units: b&&b.stake? pnl/b.stake : 0,
+    dd, off:list.filter(o=>o.off).length };
+}
+
+/* ============================================================
+   4. MOTOR: CICLOS
+   ============================================================ */
+function cycleOps(c){ return sortOps(db.ops.filter(o=>o.cycleId===c.id)); }
+function pctFor(c,local,global){
+  const n=c.resetPct?local:global;
+  return Math.max(c.pct*Math.pow(1-(c.reduction||0)/100,n), c.minPct||0);
+}
+function computeCycle(c){
+  const list=cycleOps(c), rows=[], subs=[];
+  let idx=1,local=0,global=0,withdrawn=0,finished=false,bank=c.initial;
+  let cur={index:1,start:c.initial,rows:[],closed:false}, greens=0,reds=0;
+  for(const e of list){
+    if(finished){ rows.push({entry:e,orphan:true}); continue; }
+    const pct=pctFor(c,local,global), before=bank, target=before*pct/100, profit=Number(e.pnl)||0;
+    bank=before+profit;
+    if(e.result==='green')greens++; else if(e.result==='red')reds++;
+    const row={entry:e,sub:idx,n:local+1,pct,before,target,profit,after:bank,closes:false};
+    rows.push(row); cur.rows.push(row); local++; global++;
+    if(bank>=cur.start*2-1e-9 && bank>0){
+      const isLast=idx>=c.count;
+      let take = isLast? bank : (idx===1? Math.min(c.initial,bank) : bank*((c.withdrawPct??50)/100));
+      cur.end=bank; cur.take=take; cur.carry=bank-take; cur.closed=true;
+      withdrawn+=take; subs.push(cur); row.closes=true; row.take=take;
+      if(isLast){ finished=true; bank=0; }
+      else { idx++; bank=cur.carry; local=0; cur={index:idx,start:bank,rows:[],closed:false}; }
+    }
+    row.bankAfterEvent = row.closes ? (finished?0:cur.start) : bank;
+    row.cumWithdrawn = withdrawn;
+  }
+  if(!finished){ cur.end=bank; cur.take=0; cur.carry=bank; subs.push(cur); }
+  const total=withdrawn+bank;
+  return {rows,subs,bank,active:finished?null:cur,finished,withdrawn,idx:finished?c.count:idx,
+    local,global,greens,reds,total,profit:total-c.initial,nextPct:finished?0:pctFor(c,local,global)};
+}
+function entriesLeft(c,r){
+  if(!r.active||r.bank<=0) return null;
+  let b=r.bank,l=r.local,g=r.global,n=0, goal=r.active.start*2;
+  while(b<goal && n<400){ b+=b*pctFor(c,l,g)/100; l++;g++;n++; }
+  return n>=400?null:n;
+}
+
+/* ============================================================
+   5. AGRUPAMENTOS
+   ============================================================ */
+function bucketOf(date,p){
+  if(p==='day') return date;
+  if(p==='month') return date.slice(0,7);
+  if(p==='year') return date.slice(0,4);
+  const d=dOf(date), off=(d.getDay()+6)%7; d.setDate(d.getDate()-off);
+  return new Date(d.getTime()-d.getTimezoneOffset()*6e4).toISOString().slice(0,10);
+}
+function labelOf(key,p){
+  if(p==='year') return key;
+  if(p==='month'){ const[y,m]=key.split('-'); return MES[+m-1]+'/'+y.slice(2); }
+  const[y,m,d]=key.split('-'); return d+'/'+m;
+}
+function buckets(list,p){
+  const map=new Map();
+  list.forEach(o=>{ const k=bucketOf(o.date,p); map.set(k,(map.get(k)||0)+o.pnl); });
+  const keys=[...map.keys()].sort();
+  let cum=0;
+  return keys.map(k=>{ cum+=map.get(k); return {key:k,label:labelOf(k,p),pnl:map.get(k),cum}; });
+}
+function groupBy(list, keyFn){
+  const map=new Map();
+  list.forEach(o=>{ keyFn(o).forEach(k=>{ if(!k) return; if(!map.has(k)) map.set(k,[]); map.get(k).push(o); }); });
+  return [...map.entries()].map(([k,v])=>Object.assign({key:k,ops:v}, summarize(v)));
+}
+
+/* ============================================================
+   6. GRÁFICOS (canvas)
+   ============================================================ */
+function setupCanvas(cv){
+  if(!cv) return null;
+  const ctx=cv.getContext&&cv.getContext('2d'); if(!ctx) return null;
+  const dpr=window.devicePixelRatio||1;
+  const w=cv.clientWidth||600, h=cv.clientHeight||240;
+  cv.width=w*dpr; cv.height=h*dpr; ctx.setTransform(dpr,0,0,dpr,0,0); ctx.clearRect(0,0,w,h);
+  return {ctx,w,h};
+}
+const C=()=>{ const s=getComputedStyle(document.documentElement);
+  return {amber:s.getPropertyValue('--amber').trim(),mint:s.getPropertyValue('--mint').trim(),
+          coral:s.getPropertyValue('--coral').trim(),muted:s.getPropertyValue('--muted').trim(),
+          sky:s.getPropertyValue('--sky').trim(),violet:s.getPropertyValue('--violet').trim(),sand:s.getPropertyValue('--sand').trim()}; };
+const SERIES=['#F5B841','#3DDC97','#5AA9FF','#B48BFF','#E8A76A','#FF6B61','#7DD3C0','#F58BB8'];
+
+function axisFmt(v){
+  const b=banca(), u=db.settings.unit;
+  if(u==='pct') return (b.initial? v/b.initial*100:0).toFixed(1)+'%';
+  if(u==='un')  return (b.stake? v/b.stake:0).toFixed(1)+'u';
+  return Math.abs(v)>=1000 ? (v/1000).toFixed(1)+'k' : v.toFixed(0);
+}
+function drawSeries(cv, bks, mode){
+  const cx=setupCanvas(cv); if(!cx) return; const {ctx,w,h}=cx, col=C();
+  if(!bks.length){ ctx.fillStyle=col.muted; ctx.font='13px Archivo,sans-serif'; ctx.textAlign='center';
+    ctx.fillText('Sem dados no período', w/2, h/2); return; }
+  const pad={l:56,r:52,t:14,b:30}, W=w-pad.l-pad.r, H=h-pad.t-pad.b;
+  const showB=mode!=='line', showL=mode!=='bars';
+  const bmax=Math.max(1,...bks.map(b=>Math.abs(b.pnl)));
+  const lmin=Math.min(0,...bks.map(b=>b.cum)), lmax=Math.max(0,...bks.map(b=>b.cum))||1;
+  const bY=v=>pad.t+H/2-(v/bmax)*(H/2-6);
+  const lspan=(lmax-lmin)||1, lY=v=>pad.t+H-((v-lmin)/lspan)*H;
+  const n=bks.length, step=W/n, bw=Math.max(2,Math.min(26,step*.62));
+  ctx.font='10px "Roboto Mono",monospace';
+  // grade
+  for(let g=0;g<=4;g++){
+    const y=pad.t+H*g/4; ctx.strokeStyle='rgba(255,255,255,.06)'; ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(pad.l,y); ctx.lineTo(w-pad.r,y); ctx.stroke();
+    if(showL){ ctx.fillStyle=col.muted; ctx.textAlign='left'; ctx.textBaseline='middle';
+      ctx.fillText(axisFmt(lmax-(lspan*g/4)), w-pad.r+7, y); }
+  }
+  if(showB){ // eixo das barras (esquerda)
+    [bmax,0,-bmax].forEach(v=>{ ctx.fillStyle=col.muted; ctx.textAlign='right'; ctx.textBaseline='middle';
+      ctx.fillText(axisFmt(v), pad.l-8, bY(v)); });
+    ctx.strokeStyle='rgba(255,255,255,.14)'; ctx.beginPath(); ctx.moveTo(pad.l,bY(0)); ctx.lineTo(w-pad.r,bY(0)); ctx.stroke();
+    bks.forEach((b,i)=>{
+      const x=pad.l+step*i+step/2-bw/2, y0=bY(0), y=bY(b.pnl);
+      ctx.fillStyle=b.pnl>=0?'rgba(61,220,151,.55)':'rgba(255,107,97,.55)';
+      ctx.fillRect(x,Math.min(y,y0),bw,Math.max(1.5,Math.abs(y-y0)));
+    });
+  }
+  if(showL){
+    ctx.beginPath(); ctx.lineWidth=2; ctx.strokeStyle=col.amber; ctx.lineJoin='round';
+    bks.forEach((b,i)=>{ const x=pad.l+step*i+step/2, y=lY(b.cum); i?ctx.lineTo(x,y):ctx.moveTo(x,y); });
+    ctx.stroke();
+    ctx.fillStyle=col.amber;
+    bks.forEach((b,i)=>{ if(n>60&&i%Math.ceil(n/60)) return; const x=pad.l+step*i+step/2,y=lY(b.cum);
+      ctx.beginPath(); ctx.arc(x,y,2.4,0,7); ctx.fill(); });
+  }
+  // rótulos do eixo x
+  ctx.fillStyle=col.muted; ctx.textAlign='center'; ctx.textBaseline='top';
+  const every=Math.ceil(n/Math.max(2,Math.floor(W/62)));
+  bks.forEach((b,i)=>{ if(i%every) return; ctx.fillText(b.label,pad.l+step*i+step/2,pad.t+H+8); });
+}
+function drawMulti(cv, labels, series){
+  const cx=setupCanvas(cv); if(!cx) return; const {ctx,w,h}=cx, col=C();
+  if(!series.length||!labels.length){ ctx.fillStyle=col.muted; ctx.font='13px Archivo,sans-serif'; ctx.textAlign='center';
+    ctx.fillText('Cadastre métodos nas operações para comparar', w/2, h/2); return; }
+  const pad={l:56,r:14,t:14,b:28}, W=w-pad.l-pad.r, H=h-pad.t-pad.b;
+  const all=series.flatMap(s=>s.points);
+  const mn=Math.min(0,...all), mx=Math.max(0,...all)||1, span=(mx-mn)||1;
+  const X=i=>pad.l+(labels.length<2?W/2:W*i/(labels.length-1)), Y=v=>pad.t+H-((v-mn)/span)*H;
+  ctx.font='10px "Roboto Mono",monospace';
+  for(let g=0;g<=4;g++){ const v=mx-span*g/4, y=Y(v);
+    ctx.strokeStyle='rgba(255,255,255,.06)'; ctx.beginPath(); ctx.moveTo(pad.l,y); ctx.lineTo(w-pad.r,y); ctx.stroke();
+    ctx.fillStyle=col.muted; ctx.textAlign='right'; ctx.textBaseline='middle'; ctx.fillText(axisFmt(v),pad.l-8,y); }
+  ctx.strokeStyle='rgba(255,255,255,.14)'; ctx.beginPath(); ctx.moveTo(pad.l,Y(0)); ctx.lineTo(w-pad.r,Y(0)); ctx.stroke();
+  series.forEach(s=>{ ctx.beginPath(); ctx.lineWidth=2; ctx.strokeStyle=s.color; ctx.lineJoin='round';
+    s.points.forEach((v,i)=>{ const x=X(i),y=Y(v); i?ctx.lineTo(x,y):ctx.moveTo(x,y); }); ctx.stroke(); });
+  ctx.fillStyle=col.muted; ctx.textAlign='center'; ctx.textBaseline='top';
+  const every=Math.ceil(labels.length/Math.max(2,Math.floor(W/62)));
+  labels.forEach((l,i)=>{ if(i%every) return; ctx.fillText(l,X(i),pad.t+H+8); });
+}
+function drawBars(cv, items){
+  const cx=setupCanvas(cv); if(!cx) return; const {ctx,w,h}=cx, col=C();
+  if(!items.length){ ctx.fillStyle=col.muted; ctx.font='13px Archivo,sans-serif'; ctx.textAlign='center';
+    ctx.fillText('Sem dados', w/2, h/2); return; }
+  const pad={l:56,r:14,t:14,b:42}, W=w-pad.l-pad.r, H=h-pad.t-pad.b;
+  const mx=Math.max(1,...items.map(i=>Math.abs(i.value)));
+  const Y=v=>pad.t+H/2-(v/mx)*(H/2-8), step=W/items.length, bw=Math.min(58,step*.6);
+  ctx.font='10px "Roboto Mono",monospace';
+  [mx,0,-mx].forEach(v=>{ const y=Y(v); ctx.strokeStyle=v===0?'rgba(255,255,255,.14)':'rgba(255,255,255,.06)';
+    ctx.beginPath(); ctx.moveTo(pad.l,y); ctx.lineTo(w-pad.r,y); ctx.stroke();
+    ctx.fillStyle=col.muted; ctx.textAlign='right'; ctx.textBaseline='middle'; ctx.fillText(axisFmt(v),pad.l-8,y); });
+  items.forEach((it,i)=>{
+    const x=pad.l+step*i+step/2, y0=Y(0), y=Y(it.value);
+    ctx.fillStyle=it.value>=0?'rgba(61,220,151,.6)':'rgba(255,107,97,.6)';
+    ctx.fillRect(x-bw/2,Math.min(y,y0),bw,Math.max(2,Math.abs(y-y0)));
+    ctx.fillStyle=col.muted; ctx.textAlign='center'; ctx.textBaseline='top';
+    ctx.font='10px Archivo,sans-serif';
+    const lbl=it.label.length>14?it.label.slice(0,13)+'…':it.label;
+    ctx.fillText(lbl,x,pad.t+H+8);
+    ctx.font='10px "Roboto Mono",monospace'; ctx.fillStyle=it.value>=0?col.mint:col.coral;
+    ctx.textBaseline='bottom'; ctx.fillText(axisFmt(it.value), x, Math.min(y,y0)-4);
+  });
+}
+
+/* ============================================================
+   7. NAVEGAÇÃO E ESTADO DE TELA
+   ============================================================ */
+let view='dash', currentCycle=null, dashPeriod='day', dashSeries='both', repPeriod='all',
+    calRef=new Date(), calSel=null, editingOp=null, opCycleId=null, opResult='green',
+    editingCycle=null, editingMethod=null, editingBanca=null, detailOp=null;
+
+function showView(v){
+  view=v;
+  $$('.view').forEach(s=>s.hidden = (s.id!=='view-'+v));
+  const key = v==='cycle'?'cycles':v;
+  $$('#tabs .tab').forEach(b=>b.classList.toggle('is-on', b.dataset.view===key));
+  window.scrollTo({top:0});
+  renderAll();
+}
+function renderAll(){
+  syncBancaSel();
+  if(view==='dash') renderDash();
+  if(view==='ops') renderOps();
+  if(view==='cycles') renderCycles();
+  if(view==='cycle') renderCycle();
+  if(view==='reports') renderReports();
+  if(view==='calendar') renderCalendar();
+  if(view==='methods') renderMethods();
+  if(view==='registry') renderRegistry();
+}
+$('#tabs').addEventListener('click',e=>{ const b=e.target.closest('.tab'); if(b) showView(b.dataset.view); });
+document.addEventListener('click',e=>{
+  const g=e.target.closest('[data-goto]'); if(g) showView(g.dataset.goto);
+  const n=e.target.closest('[data-newop]'); if(n) openOp(null,null);
+});
+$('#unitToggle').addEventListener('click',e=>{
+  const b=e.target.closest('button'); if(!b) return;
+  db.settings.unit=b.dataset.u; save();
+  $$('#unitToggle button').forEach(x=>x.classList.toggle('on',x===b));
+  renderAll();
+});
+$('#bancaSel').addEventListener('change',e=>{ db.activeBanca=e.target.value; save(); currentCycle=null; renderAll(); });
+function syncBancaSel(){
+  $('#bancaSel').innerHTML = db.bancas.map(b=>`<option value="${b.id}" ${b.id===db.activeBanca?'selected':''}>${esc(b.name)}</option>`).join('');
+}
+function methodName(id){ const m=db.methods.find(m=>m.id===id); return m?m.name:'Sem método'; }
+function gameLabel(o){ return o.teamA||o.teamB ? `${esc(o.teamA||'?')} × ${esc(o.teamB||'?')}` : '<span class="dim">sem jogo</span>'; }
+function resultChip(o){
+  const v=fmtV(o.pnl);
+  if(o.result==='green') return `<span class="chip win">${v}</span>`;
+  if(o.result==='red') return `<span class="chip loss">${v}</span>`;
+  return `<span class="chip">anulada</span>`;
+}
+
+/* ============================================================
+   8. PAINEL
+   ============================================================ */
+function renderDash(){
+  const b=banca(); if(!b) return;
+  const all=enrich(), s=summarize(all);
+  $('#dashTitle').textContent=b.name;
+  $('#dashSub').textContent=`Inicial ${money(b.initial)} · 1 unidade = ${money(b.stake)} · ${all.length} operações registradas`;
+
+  $('#dashStats').innerHTML=`
+    <div class="stat"><small>Banca atual</small><b>${money(b.initial+s.pnl)}</b><div class="sub">inicial ${money(b.initial)}</div></div>
+    <div class="stat"><small>Resultado</small><b class="${cls(s.pnl)}">${fmtV(s.pnl)}</b><div class="sub">${pctS(b.initial?s.pnl/b.initial*100:0)} da banca</div></div>
+    <div class="stat"><small>Unidades</small><b class="${cls(s.units)}">${s.units>0?'+':''}${un(s.units)}</b><div class="sub">1u = ${money(b.stake)}</div></div>
+    <div class="stat"><small>ROI</small><b class="${cls(s.roi||0)}">${s.roi==null?'—':pctS(s.roi)}</b><div class="sub">stake ${money(s.stake)}</div></div>
+    <div class="stat"><small>Acerto</small><b>${pctS(s.hit,1)}</b><div class="sub">${s.greens}G · ${s.reds}R</div></div>
+    <div class="stat"><small>Drawdown máx.</small><b class="${s.dd<0?'neg':''}">${s.dd?fmtV(s.dd,{sign:false}):'—'}</b><div class="sub">pico até fundo</div></div>`;
+
+  drawSeries($('#dashChart'), buckets(all,dashPeriod), dashSeries);
+
+  /* comparativo de métodos */
+  const bks=buckets(all,dashPeriod).map(x=>x.key);
+  const used=[...new Set(all.map(o=>o.methodId||'__none'))];
+  const series=used.slice(0,8).map((mid,i)=>{
+    const ops=all.filter(o=>(o.methodId||'__none')===mid);
+    let cum=0; const map=new Map();
+    ops.forEach(o=>{ const k=bucketOf(o.date,dashPeriod); map.set(k,(map.get(k)||0)+o.pnl); });
+    const points=bks.map(k=>{ cum+=map.get(k)||0; return cum; });
+    return {name: mid==='__none'?'Sem método':methodName(mid), color:SERIES[i%SERIES.length], points, total:cum};
+  }).sort((a,b)=>b.total-a.total);
+  drawMulti($('#cmpChart'), bks.map(k=>labelOf(k,dashPeriod)), series);
+  $('#cmpLegend').innerHTML = series.map(s=>
+    `<span style="display:inline-flex;align-items:center;gap:6px"><i style="width:14px;height:3px;border-radius:2px;background:${s.color};display:inline-block"></i>${esc(s.name)} <b class="mono ${cls(s.total)}">${fmtV(s.total)}</b></span>`).join('');
+
+  /* disciplina */
+  const offs=all.filter(o=>o.off);
+  $('#discChip').textContent = `${offs.length} fora do método`;
+  const diff=s.adj-s.pnl;
+  $('#discBox').innerHTML = offs.length ? `
+    <div style="display:grid;gap:10px">
+      <div style="display:flex;justify-content:space-between"><span class="dim">Resultado real</span><b class="mono ${cls(s.pnl)}">${fmtV(s.pnl)}</b></div>
+      <div style="display:flex;justify-content:space-between"><span class="dim">Seguindo a stake do método</span><b class="mono ${cls(s.adj)}">${fmtV(s.adj)}</b></div>
+      <div class="bar"><i style="width:${Math.min(100,Math.abs(s.pnl)/(Math.max(Math.abs(s.pnl),Math.abs(s.adj))||1)*100)}%"></i></div>
+      <div style="border-top:1px solid var(--line);padding-top:10px;font-size:13px;color:var(--muted)">
+        ${diff>0?`Sair do método <b class="neg">custou ${fmtV(-Math.abs(diff),{sign:false})}</b> até aqui.`
+                 :diff<0?`Sair do método <b class="pos">rendeu ${fmtV(Math.abs(diff),{sign:false})}</b> a mais — mas com risco fora do plano.`
+                 :'Sem diferença material até aqui.'}
+      </div>
+    </div>` : `<p class="dim" style="margin:0;font-size:13px">Toda operação com método respeitou a stake definida. Defina a stake de cada método para acompanhar isso.</p>`;
+
+  /* rankings */
+  const mets=groupBy(all,o=>[o.methodId||'__none']).sort((a,b)=>b.pnl-a.pnl);
+  $('#rankMethods').innerHTML = rankHtml(mets.map(m=>({label: m.key==='__none'?'Sem método':methodName(m.key), sub:`${m.n} ops · ${pctS(m.hit,0)} acerto`, value:m.pnl})));
+  const teams=groupBy(all,o=>[o.teamA,o.teamB]).sort((a,b)=>b.pnl-a.pnl);
+  const top=[...teams.slice(0,4),...teams.slice(-3).filter(t=>t.pnl<0)];
+  const seen=new Set();
+  $('#rankTeams').innerHTML = rankHtml(top.filter(t=>!seen.has(t.key)&&seen.add(t.key))
+    .map(t=>({label:t.key, sub:`${t.n} ops`, value:t.pnl})));
+
+  /* últimas */
+  const last=all.slice(-6).reverse();
+  $('#dashOps').innerHTML = last.length ? last.map(o=>`
+    <tr class="clickable" data-op="${o.id}">
+      <td class="l mono" style="width:70px">${fmtDate(o.date)}</td>
+      <td class="l">${gameLabel(o)}<span class="comp">${esc(o.comp||'')} ${o.cycleId?'· ciclo':''}</span></td>
+      <td class="l dim" style="font-size:12px">${esc(methodName(o.methodId))}</td>
+      <td>${resultChip(o)}</td>
+    </tr>`).join('') : `<tr><td class="l dim" style="padding:18px 0">Nenhuma operação ainda.</td></tr>`;
+}
+function rankHtml(items){
+  if(!items.length) return '<p class="dim" style="margin:0;font-size:13px">Sem dados ainda.</p>';
+  const max=Math.max(...items.map(i=>Math.abs(i.value)),1);
+  return items.map(i=>`
+    <div class="rank-row">
+      <div class="lbl">${esc(i.label)}<small>${esc(i.sub||'')}</small></div>
+      <div class="val ${cls(i.value)}">${fmtV(i.value)}</div>
+      <div class="rank-bar"><i style="width:${Math.abs(i.value)/max*100}%;background:${i.value>=0?'var(--mint)':'var(--coral)'}"></i></div>
+    </div>`).join('');
+}
+$('#dashPeriod').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b)return;
+  dashPeriod=b.dataset.p; $$('#dashPeriod button').forEach(x=>x.classList.toggle('on',x===b)); renderDash(); });
+$('#dashSeries').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b)return;
+  dashSeries=b.dataset.s; $$('#dashSeries button').forEach(x=>x.classList.toggle('on',x===b)); renderDash(); });
+
+/* ============================================================
+   9. OPERAÇÕES
+   ============================================================ */
+function filteredOps(){
+  let list=enrich();
+  const p=$('#fltPeriod').value, m=$('#fltMethod').value, c=$('#fltComp').value,
+        r=$('#fltResult').value, sc=$('#fltScope').value, t=$('#fltText').value.trim().toLowerCase();
+  list=inPeriod(list,p);
+  if(m!=='all') list=list.filter(o=>(o.methodId||'__none')===m);
+  if(c!=='all') list=list.filter(o=>(o.comp||'')===c);
+  if(r!=='all') list=list.filter(o=>o.result===r);
+  if(sc==='cycle') list=list.filter(o=>o.cycleId);
+  if(sc==='free') list=list.filter(o=>!o.cycleId);
+  if(sc==='off') list=list.filter(o=>o.off);
+  if(t) list=list.filter(o=>[o.teamA,o.teamB,o.comp,o.market,o.note].join(' ').toLowerCase().includes(t));
+  return list;
+}
+function renderOps(){
+  const b=banca();
+  $('#fltMethod').innerHTML=`<option value="all">Todos os métodos</option><option value="__none">Sem método</option>`+
+    db.methods.map(m=>`<option value="${m.id}">${esc(m.name)}</option>`).join('');
+  $('#fltComp').innerHTML=`<option value="all">Todas as competições</option>`+
+    db.comps.map(c=>`<option value="${esc(c)}">${esc(c)}</option>`).join('');
+  if(renderOps._m) $('#fltMethod').value=renderOps._m;
+  if(renderOps._c) $('#fltComp').value=renderOps._c;
+
+  const list=filteredOps(), s=summarize(list);
+  $('#opsStats').innerHTML=`
+    <div class="stat"><small>Operações</small><b>${s.n}</b><div class="sub">${s.greens}G · ${s.reds}R</div></div>
+    <div class="stat"><small>Resultado</small><b class="${cls(s.pnl)}">${fmtV(s.pnl)}</b></div>
+    <div class="stat"><small>ROI</small><b class="${cls(s.roi||0)}">${s.roi==null?'—':pctS(s.roi)}</b><div class="sub">stake ${money(s.stake)}</div></div>
+    <div class="stat"><small>Acerto</small><b>${pctS(s.hit,1)}</b></div>
+    <div class="stat"><small>Fora do método</small><b class="${s.off?'neg':''}">${s.off}</b><div class="sub">${s.off?fmtV(s.adj-s.pnl)+' de diferença':'tudo no plano'}</div></div>`;
+
+  let cum=0;
+  $('#tblOps tbody').innerHTML=list.map(o=>{ cum+=o.pnl; return `
+    <tr class="clickable" data-op="${o.id}">
+      <td class="l mono">${fmtDate(o.date)}</td>
+      <td class="l">${gameLabel(o)}<span class="comp">${esc(o.comp||'')}${o.market?' · '+esc(o.market):''}</span></td>
+      <td class="l" style="font-size:12px">${esc(methodName(o.methodId))}
+        ${o.cycleId?'<span class="chip on" style="margin-left:4px">ciclo</span>':''}
+        ${o.off?'<span class="chip warn" style="margin-left:4px">fora</span>':''}</td>
+      <td class="mono">${o.stake?money(o.stake):'—'}</td>
+      <td>${resultChip(o)}</td>
+      <td class="mono ${cls(o.roi||0)}">${o.roi==null?'—':pctS(o.roi,1)}</td>
+      <td class="mono ${cls(cum)}">${fmtV(cum)}</td>
+      <td><button class="icon-btn" data-open="${o.id}">›</button></td>
+    </tr>`; }).reverse().join('');
+  $('#opsEmpty').hidden=list.length>0;
+  $('#tblOps').style.display=list.length?'':'none';
+}
+$('#opsFilters').addEventListener('input',()=>{ renderOps._m=$('#fltMethod').value; renderOps._c=$('#fltComp').value; renderOps(); });
+$('#fltClear').addEventListener('click',()=>{ renderOps._m=null; renderOps._c=null;
+  $('#fltPeriod').value='all'; $('#fltResult').value='all'; $('#fltScope').value='all'; $('#fltText').value=''; renderOps(); });
+document.addEventListener('click',e=>{
+  const tr=e.target.closest('[data-op]'); if(tr) openDetail(tr.dataset.op);
+});
+
+/* ============================================================
+   10. RELATÓRIOS
+   ============================================================ */
+$('#repPeriod').addEventListener('click',e=>{ const b=e.target.closest('button'); if(!b)return;
+  repPeriod=b.dataset.p; $$('#repPeriod button').forEach(x=>x.classList.toggle('on',x===b)); renderReports(); });
+
+function renderReports(){
+  const list=inPeriod(enrich(),repPeriod), s=summarize(list);
+  const offs=list.filter(o=>o.off), diff=s.adj-s.pnl;
+  $('#repDiscChip').textContent=`${offs.length} de ${s.n} operações`;
+  $('#repDisc').innerHTML = `
+    <div class="stats" style="margin:0">
+      <div class="stat"><small>Resultado real</small><b class="${cls(s.pnl)}">${fmtV(s.pnl)}</b></div>
+      <div class="stat"><small>Se tivesse seguido a stake</small><b class="${cls(s.adj)}">${fmtV(s.adj)}</b></div>
+      <div class="stat"><small>Diferença</small><b class="${cls(diff)}">${fmtV(diff)}</b><div class="sub">${diff<0?'a indisciplina custou':'a indisciplina rendeu'}</div></div>
+      <div class="stat"><small>Stake fora do plano</small><b>${money(offs.reduce((a,o)=>a+(o.stake-o.exp),0))}</b><div class="sub">acima do previsto</div></div>
+    </div>
+    ${offs.length?`<div class="table-wrap" style="margin-top:14px"><table style="min-width:640px">
+      <thead><tr><th class="l">Data</th><th class="l">Jogo</th><th class="l">Método</th><th>Stake usada</th><th>Stake do método</th><th>Real</th><th>No método</th></tr></thead>
+      <tbody>${offs.slice().reverse().map(o=>`<tr class="clickable" data-op="${o.id}">
+        <td class="l mono">${fmtDate(o.date)}</td><td class="l">${gameLabel(o)}</td>
+        <td class="l" style="font-size:12px">${esc(methodName(o.methodId))}</td>
+        <td class="mono neg">${money(o.stake)}</td><td class="mono">${money(o.exp)}</td>
+        <td class="mono ${cls(o.pnl)}">${fmtV(o.pnl)}</td><td class="mono ${cls(o.adjPnl)}">${fmtV(o.adjPnl)}</td></tr>`).join('')}
+      </tbody></table></div>`:'<p class="dim" style="margin:12px 0 0;font-size:13px">Nenhuma operação acima da stake do método no período. Defina a stake em cada método para ativar esta análise.</p>'}`;
+
+  const mets=groupBy(list,o=>[o.methodId||'__none']).sort((a,b)=>b.pnl-a.pnl);
+  $('#tblRepMethods tbody').innerHTML = mets.length ? mets.map(m=>{
+    const name=m.key==='__none'?'Sem método':methodName(m.key);
+    const d=m.adj-m.pnl;
+    return `<tr><td class="l">${esc(name)}</td><td class="mono">${m.n}</td><td class="mono">${pctS(m.hit,0)}</td>
+      <td class="mono">${money(m.stake)}</td><td class="mono ${cls(m.pnl)}">${fmtV(m.pnl)}</td>
+      <td class="mono ${cls(m.roi||0)}">${m.roi==null?'—':pctS(m.roi,1)}</td>
+      <td class="mono ${cls(m.units)}">${m.units>0?'+':''}${un(m.units)}</td>
+      <td class="mono ${m.off?'neg':'dim'}">${m.off}</td>
+      <td class="mono ${cls(m.adj)}">${d?fmtV(m.adj):'—'}</td></tr>`;
+  }).join('') : `<tr><td colspan="9" class="l dim" style="padding:16px 0">Sem operações no período.</td></tr>`;
+  drawBars($('#repMethodChart'), mets.map(m=>({label:m.key==='__none'?'Sem método':methodName(m.key), value:m.pnl})));
+
+  const comps=groupBy(list,o=>[o.comp||'(sem competição)']).sort((a,b)=>b.pnl-a.pnl);
+  $('#tblRepComps tbody').innerHTML = comps.length? comps.map(c=>`<tr><td class="l">${esc(c.key)}</td>
+    <td class="mono">${c.n}</td><td class="mono">${pctS(c.hit,0)}</td>
+    <td class="mono ${cls(c.pnl)}">${fmtV(c.pnl)}</td>
+    <td class="mono ${cls(c.roi||0)}">${c.roi==null?'—':pctS(c.roi,1)}</td></tr>`).join('')
+    : `<tr><td colspan="5" class="l dim" style="padding:16px 0">Sem dados.</td></tr>`;
+
+  const teams=groupBy(list,o=>[o.teamA,o.teamB]).sort((a,b)=>b.pnl-a.pnl);
+  $('#tblRepTeams tbody').innerHTML = teams.length? teams.map(t=>`<tr><td class="l">${esc(t.key)}</td>
+    <td class="mono">${t.n}</td><td class="mono">${pctS(t.hit,0)}</td>
+    <td class="mono ${cls(t.pnl)}">${fmtV(t.pnl)}</td>
+    <td class="mono ${cls(t.roi||0)}">${t.roi==null?'—':pctS(t.roi,1)}</td></tr>`).join('')
+    : `<tr><td colspan="5" class="l dim" style="padding:16px 0">Sem dados.</td></tr>`;
+}
+
+/* ============================================================
+   11. CALENDÁRIO
+   ============================================================ */
+$('#calPrev').onclick=()=>{ calRef.setMonth(calRef.getMonth()-1); renderCalendar(); };
+$('#calNext').onclick=()=>{ calRef.setMonth(calRef.getMonth()+1); renderCalendar(); };
+function renderCalendar(){
+  const y=calRef.getFullYear(), m=calRef.getMonth();
+  $('#calLabel').textContent=`${MESL[m]} ${y}`;
+  $('#calDow').innerHTML=['seg','ter','qua','qui','sex','sáb','dom'].map(d=>`<div class="cal-dow">${d}</div>`).join('');
+  const all=enrich(), byDay=new Map();
+  all.forEach(o=>{ if(!byDay.has(o.date)) byDay.set(o.date,[]); byDay.get(o.date).push(o); });
+  const first=new Date(y,m,1), lead=(first.getDay()+6)%7, days=new Date(y,m+1,0).getDate();
+  let html='', monthPnl=0, monthOps=0;
+  for(let i=0;i<lead;i++) html+=`<div class="cal-day void"></div>`;
+  for(let d=1;d<=days;d++){
+    const key=`${y}-${String(m+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const ops=byDay.get(key)||[], pnl=ops.reduce((s,o)=>s+o.pnl,0);
+    if(ops.length){ monthPnl+=pnl; monthOps+=ops.length; }
+    const k=ops.length? (pnl>0?'win':pnl<0?'loss':'') : '';
+    html+=`<div class="cal-day ${k} ${calSel===key?'sel':''}" data-day="${key}">
+      <div class="d">${d}</div>
+      ${ops.length?`<div class="v ${cls(pnl)}">${fmtV(pnl)}</div><div class="n">${ops.length} op${ops.length>1?'s':''}</div>`:''}
+    </div>`;
+  }
+  $('#calGrid').innerHTML=html;
+  $('#calMonthSum').innerHTML=`<span class="dim">mês:</span> <b class="${cls(monthPnl)}">${fmtV(monthPnl)}</b> <span class="dim">em ${monthOps} operações</span>`;
+  renderCalDay(byDay);
+}
+function renderCalDay(byDay){
+  const box=$('#calDayBox');
+  if(!calSel||!byDay.get(calSel)){ $('#calDayTitle').textContent='Selecione um dia';
+    box.innerHTML='<div class="empty" style="border:0;padding:24px 0">Clique em um dia com operações.</div>'; return; }
+  const ops=byDay.get(calSel), s=summarize(ops);
+  $('#calDayTitle').textContent=fmtDate(calSel);
+  box.innerHTML=`
+    <div class="figures" style="margin-top:0">
+      <div class="fig"><small>Resultado</small><span class="${cls(s.pnl)}">${fmtV(s.pnl)}</span></div>
+      <div class="fig"><small>Operações</small><span>${s.n}</span></div>
+      <div class="fig"><small>Acerto</small><span>${pctS(s.hit,0)}</span></div>
+    </div>
+    <div style="display:grid;gap:8px">${ops.map(o=>`
+      <div class="clickable" data-op="${o.id}" style="display:flex;justify-content:space-between;gap:10px;align-items:center;
+        padding:10px;border:1px solid var(--line);border-radius:10px;cursor:pointer">
+        <div style="min-width:0">
+          <div style="font-size:13.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${gameLabel(o)}</div>
+          <div class="dim" style="font-size:11px">${esc(methodName(o.methodId))}${o.comp?' · '+esc(o.comp):''}</div>
+        </div>${resultChip(o)}
+      </div>`).join('')}</div>`;
+}
+$('#calGrid').addEventListener('click',e=>{
+  const d=e.target.closest('[data-day]'); if(!d) return;
+  calSel = calSel===d.dataset.day ? null : d.dataset.day; renderCalendar();
+});
+
+/* ============================================================
+   12. CICLOS
+   ============================================================ */
+function renderCycles(){
+  const list=db.cycles.filter(c=>c.bancaId===db.activeBanca);
+  const box=$('#cyclesList');
+  box.className=list.length?'grid cycles-grid':'';
+  if(!list.length){ box.innerHTML=`<div class="empty"><strong>Nenhum ciclo nesta banca</strong>
+    Crie um ciclo com valor inicial, % por entrada e quantos ciclos internos ele terá.</div>`; return; }
+  box.innerHTML=list.map(c=>{
+    const r=computeCycle(c), prog=r.active?Math.max(0,Math.min(1,(r.bank-r.active.start)/(r.active.start||1))):1;
+    return `<article class="card cycle-card" data-cyc="${c.id}" tabindex="0">
+      <div class="card-actions">
+        <button class="icon-btn" data-cact="edit" title="Editar">✎</button>
+        <button class="icon-btn danger" data-cact="del" title="Excluir">✕</button>
+      </div>
+      <h3>${esc(c.name)}</h3>
+      <div class="meta">${esc(methodName(c.methodId))} · ${pctS(c.pct)} inicial${c.reduction?` · −${pctS(c.reduction)}/entrada`:''}</div>
+      <div class="figures">
+        <div class="fig"><small>Banca do ciclo</small><span>${money(r.bank)}</span></div>
+        <div class="fig"><small>Sacado</small><span>${money(r.withdrawn)}</span></div>
+        <div class="fig"><small>Resultado</small><span class="${cls(r.profit)}">${money(r.profit)}</span></div>
+      </div>
+      <div class="bar"><i style="width:${(prog*100).toFixed(1)}%"></i></div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px">
+        <span class="chip ${r.finished?'win':'on'}">${r.finished?'Concluído':'Ciclo '+r.idx+'/'+c.count}</span>
+        <span class="dim" style="font-size:11.5px">${r.rows.length} entradas</span>
+      </div></article>`;
+  }).join('');
+}
+$('#cyclesList').addEventListener('click',e=>{
+  const card=e.target.closest('[data-cyc]'); if(!card) return;
+  const id=card.dataset.cyc, act=e.target.closest('[data-cact]')?.dataset.cact;
+  const c=db.cycles.find(x=>x.id===id);
+  if(act==='edit') return openCycleDialog(c);
+  if(act==='del'){
+    if(confirm(`Excluir "${c.name}"? As operações do ciclo continuam na banca, apenas desvinculadas.`)){
+      db.ops.forEach(o=>{ if(o.cycleId===id) o.cycleId=null; });
+      db.cycles=db.cycles.filter(x=>x.id!==id); save(); renderCycles(); toast('Ciclo excluído');
+    } return;
+  }
+  currentCycle=id; showView('cycle');
+});
+$('#btnBack').onclick=()=>{ currentCycle=null; showView('cycles'); };
+
+function renderCycle(){
+  const c=db.cycles.find(x=>x.id===currentCycle);
+  if(!c){ showView('cycles'); return; }
+  const r=computeCycle(c), m=db.methods.find(m=>m.id===c.methodId);
+  $('#dTitle').textContent=c.name;
+  $('#dMethodName').textContent=m?m.name:'sem método definido';
+  const def=$('#dMethodDef'); def.hidden=!(m&&m.definition); if(m&&m.definition) def.textContent=m.definition;
+
+  const hit=(r.greens+r.reds)?r.greens/(r.greens+r.reds)*100:0;
+  $('#dStats').innerHTML=`
+    <div class="stat"><small>Valor inicial</small><b>${money(c.initial)}</b></div>
+    <div class="stat"><small>Banca do ciclo</small><b>${money(r.bank)}</b></div>
+    <div class="stat"><small>Meta deste ciclo</small><b>${r.active?money(r.active.start*2):'—'}</b></div>
+    <div class="stat"><small>Total sacado</small><b class="pos">${money(r.withdrawn)}</b></div>
+    <div class="stat"><small>Patrimônio</small><b>${money(r.total)}</b></div>
+    <div class="stat"><small>Resultado</small><b class="${cls(r.profit)}">${money(r.profit)}</b></div>
+    <div class="stat"><small>Aproveitamento</small><b>${pctS(hit,1)}</b></div>`;
+
+  let rail='';
+  for(let i=1;i<=c.count;i++){
+    const s=r.subs.find(s=>s.index===i), state=s?(s.closed?'done':'now'):'';
+    const prog=(s&&!s.closed)?Math.max(0,Math.min(1,(r.bank-s.start)/(s.start||1))):(s?1:0);
+    const rule=i===c.count?'saca tudo':(i===1?'saca o inicial':`saca ${pctS(c.withdrawPct??50,0)}`);
+    rail+=`<div class="station ${state}"><div class="rail-line"></div><div class="dot"></div>
+      <div class="station-body"><div class="lbl">Ciclo ${i}</div>
+      <div class="val">${s?money(s.start):'—'} → ${s?money(s.start*2):'—'}</div>
+      ${s&&s.closed?`<div class="take">saque ${money(s.take)}</div>`:`<div class="val" style="opacity:.6">${rule}</div>`}
+      ${state==='now'?`<div class="bar"><i style="width:${(prog*100).toFixed(1)}%"></i></div>`:''}
+      </div></div>`;
+  }
+  $('#dRail').innerHTML=rail;
+
+  const nt=$('#nextTarget');
+  if(r.finished){
+    nt.innerHTML=`<div class="t"><b style="color:var(--mint)">Concluído</b><span>${c.count} ciclos</span></div>
+      <div class="sub">Sacado ${money(r.withdrawn)} · lucro ${money(r.profit)}</div>`;
+    $('#btnCycleOp').disabled=true; $('#btnCycleOp').style.opacity=.4;
+  }else{
+    const target=r.bank*r.nextPct/100, left=entriesLeft(c,r);
+    nt.innerHTML=`<div class="t"><b>${pctS(r.nextPct)}</b><span>entrada ${r.local+1} · ciclo ${r.idx}</span></div>
+      <div class="sub">lucro alvo ${money(target)} · banca ${money(r.bank)}</div>
+      <div class="sub dim">${left!=null?`faltam ~${left} greens para fechar o ciclo ${r.idx}`:'ajuste os parâmetros para fechar'}</div>`;
+    $('#btnCycleOp').disabled=false; $('#btnCycleOp').style.opacity=1;
+  }
+
+  let last=0,out='';
+  r.rows.forEach(row=>{
+    if(row.orphan){ out+=`<tr class="clickable" data-op="${row.entry.id}"><td class="l">—</td>
+      <td class="l">${gameLabel(row.entry)}</td><td colspan="5" class="l dim">registrada após a conclusão</td><td></td></tr>`; return; }
+    if(row.sub!==last){ last=row.sub; const s=r.subs.find(s=>s.index===row.sub);
+      out+=`<tr class="sep-row"><td colspan="8">Ciclo ${row.sub} · início ${money(s.start)} · meta ${money(s.start*2)}</td></tr>`; }
+    const e=row.entry;
+    out+=`<tr class="clickable" data-op="${e.id}">
+      <td class="l mono">${row.n}</td>
+      <td class="l">${gameLabel(e)}<span class="comp">${esc(e.comp||'')}${e.market?' · '+esc(e.market):''}</span></td>
+      <td class="mono">${fmtDate(e.date)}</td>
+      <td class="mono">${pctS(row.pct)}</td>
+      <td class="mono">${money(row.before)}</td>
+      <td>${resultChip(e)}</td>
+      <td class="mono">${money(row.after)}${row.closes?` <span class="chip win" style="margin-left:4px">saque ${money(row.take)}</span>`:''}</td>
+      <td><button class="icon-btn" data-open="${e.id}">›</button></td></tr>`;
+  });
+  $('#tblEntries tbody').innerHTML=out;
+  $('#entriesEmpty').hidden=r.rows.length>0;
+  $('#tblEntries').style.display=r.rows.length?'':'none';
+  $('#chipEntries').textContent=`${r.rows.length} · ${r.greens}G / ${r.reds}R`;
+
+  $('#tblSubs tbody').innerHTML=r.subs.map(s=>{
+    const p=(s.end||0)-s.start;
+    return `<tr><td class="l mono">${s.index}</td><td class="mono">${money(s.start)}</td><td class="mono">${s.rows.length}</td>
+      <td class="mono ${cls(p)}">${money(p)}</td><td class="mono">${money(s.end)}</td>
+      <td class="mono">${s.closed?money(s.take):'—'}</td><td class="mono">${s.closed?money(s.carry):'—'}</td>
+      <td class="l">${s.closed?'<span class="chip win">fechado</span>':'<span class="chip on">em andamento</span>'}</td></tr>`;
+  }).join('');
+
+  $('#chipChart').textContent=`${money(c.initial)} → ${money(r.total)}`;
+  drawCycleChart($('#cycleChart'), c, r);
+}
+$('#btnCycleOp').onclick=()=>openOp(null,currentCycle);
+$('#btnEditCycle').onclick=()=>openCycleDialog(db.cycles.find(c=>c.id===currentCycle));
+$('#btnDeleteCycle').onclick=()=>{
+  const c=db.cycles.find(x=>x.id===currentCycle);
+  if(confirm(`Excluir "${c.name}"? As operações continuam na banca, apenas desvinculadas.`)){
+    db.ops.forEach(o=>{ if(o.cycleId===c.id) o.cycleId=null; });
+    db.cycles=db.cycles.filter(x=>x.id!==c.id); save(); currentCycle=null; showView('cycles'); toast('Ciclo excluído');
+  }
+};
+function drawCycleChart(cv,c,r){
+  const cx=setupCanvas(cv); if(!cx) return; const {ctx,w,h}=cx, col=C();
+  const valid=r.rows.filter(x=>!x.orphan);
+  const bank=[c.initial,...valid.map(x=>x.bankAfterEvent)], tot=[c.initial,...valid.map(x=>x.bankAfterEvent+x.cumWithdrawn)];
+  if(bank.length<2){ ctx.fillStyle=col.muted; ctx.font='13px Archivo,sans-serif'; ctx.textAlign='center';
+    ctx.fillText('Registre entradas para ver a evolução', w/2, h/2); return; }
+  const pad={l:60,r:14,t:16,b:28}, W=w-pad.l-pad.r, H=h-pad.t-pad.b;
+  const all=[...bank,...tot,c.initial*2]; let mn=Math.min(...all), mx=Math.max(...all);
+  const sp=(mx-mn)||1; mn=Math.max(0,mn-sp*.12); mx+=sp*.12;
+  const X=i=>pad.l+W*i/(bank.length-1), Y=v=>pad.t+H-H*((v-mn)/((mx-mn)||1));
+  ctx.font='11px "Roboto Mono",monospace';
+  for(let g=0;g<=4;g++){ const v=mn+(mx-mn)*g/4,y=Y(v);
+    ctx.strokeStyle='rgba(255,255,255,.06)'; ctx.beginPath(); ctx.moveTo(pad.l,y); ctx.lineTo(w-pad.r,y); ctx.stroke();
+    ctx.fillStyle=col.muted; ctx.textAlign='right'; ctx.textBaseline='middle';
+    ctx.fillText(Math.abs(v)>=1000?(v/1000).toFixed(1)+'k':v.toFixed(0),pad.l-8,y); }
+  valid.forEach((row,i)=>{ if(!row.closes) return; const x=X(i+1);
+    ctx.strokeStyle='rgba(61,220,151,.35)'; ctx.setLineDash([3,4]); ctx.beginPath();
+    ctx.moveTo(x,pad.t); ctx.lineTo(x,pad.t+H); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle=col.mint; ctx.textAlign='center'; ctx.textBaseline='top';
+    ctx.font='600 10px "Barlow Condensed",sans-serif'; ctx.fillText('C'+row.sub,x,pad.t+2);
+    ctx.font='11px "Roboto Mono",monospace'; });
+  ctx.beginPath(); ctx.moveTo(X(0),pad.t+H); bank.forEach((v,i)=>ctx.lineTo(X(i),Y(v)));
+  ctx.lineTo(X(bank.length-1),pad.t+H); ctx.closePath(); ctx.fillStyle='rgba(245,184,65,.10)'; ctx.fill();
+  const line=(s,color)=>{ ctx.beginPath(); ctx.lineWidth=2; ctx.strokeStyle=color; ctx.lineJoin='round';
+    s.forEach((v,i)=>{ i?ctx.lineTo(X(i),Y(v)):ctx.moveTo(X(i),Y(v)); }); ctx.stroke(); };
+  line(tot,col.mint); line(bank,col.amber);
+  valid.forEach((row,i)=>{ ctx.beginPath(); ctx.arc(X(i+1),Y(row.bankAfterEvent),3,0,7);
+    ctx.fillStyle=row.entry.result==='green'?col.mint:row.entry.result==='red'?col.coral:col.muted; ctx.fill(); });
+  ctx.textAlign='left'; ctx.textBaseline='middle'; ctx.font='11px "Roboto Mono",monospace';
+  let lx=pad.l+4; [['Banca do ciclo',col.amber],['Com saques',col.mint]].forEach(([t,cc])=>{
+    ctx.fillStyle=cc; ctx.fillRect(lx,pad.t+H+12,12,2);
+    ctx.fillStyle=col.muted; ctx.fillText(t,lx+18,pad.t+H+13); lx+=ctx.measureText(t).width+42; });
+}
+let _rz; window.addEventListener('resize',()=>{ clearTimeout(_rz); _rz=setTimeout(renderAll,180); });
+
+/* ============================================================
+   13. DIÁLOGO: OPERAÇÃO
+   ============================================================ */
+function methodOptions(sel){
+  return `<option value="">— sem método —</option>`+db.methods.map(m=>`<option value="${m.id}" ${m.id===sel?'selected':''}>${esc(m.name)}</option>`).join('');
+}
+function openOp(op, cycleId){
+  editingOp=op||null; opCycleId=cycleId||op?.cycleId||null;
+  const cyc=opCycleId?db.cycles.find(c=>c.id===opCycleId):null;
+  $('#dlgOpTitle').textContent=op?'Editar operação':'Nova operação';
+  $('#opCycleChip').hidden=!cyc; if(cyc) $('#opCycleChip').textContent='Ciclo: '+cyc.name;
+  $('#opDelete').hidden=!op;
+  $('#oMethod').innerHTML=methodOptions(op?op.methodId:(cyc?cyc.methodId:null));
+  $('#oDate').value=op?op.date:todayISO();
+  $('#oTeamA').value=op?op.teamA||'':''; $('#oTeamB').value=op?op.teamB||'':'';
+  $('#oComp').value=op?op.comp||'':''; $('#oMarket').value=op?op.market||'':'';
+  $('#oStake').value=op&&op.stake?String(op.stake).replace('.',','):'';
+  $('#oOdd').value=op&&op.odd?String(op.odd).replace('.',','):'';
+  $('#oValue').value=op?Math.abs(op.pnl).toFixed(2).replace('.',','):'';
+  $('#oNote').value=op?op.note||'':'';
+  opResult=op?op.result:'green';
+  $$('#opSeg button').forEach(x=>x.setAttribute('aria-pressed',String(x.dataset.r===opResult)));
+  $('#oValueLbl').textContent=opResult==='red'?'Prejuízo (R$)':'Lucro (R$)';
+
+  const tgt=$('#opCycleTarget');
+  if(cyc){
+    const r=computeCycle(cyc);
+    if(!r.finished && !op){
+      const t=r.bank*r.nextPct/100;
+      tgt.innerHTML=`<div class="next-target"><div class="t"><b>${pctS(r.nextPct)}</b><span>ciclo ${r.idx} · entrada ${r.local+1}</span></div>
+        <div class="sub">lucro alvo ${money(t)} sobre ${money(r.bank)}</div></div>`;
+      if(!$('#oValue').value) $('#oValue').value=t.toFixed(2).replace('.',',');
+    } else tgt.innerHTML='';
+  } else tgt.innerHTML='';
+  if(!op) suggestStake();
+  stakeHint();
+  $('#dlgOp').showModal();
+}
+$('#opSeg').addEventListener('click',e=>{
+  const b=e.target.closest('button'); if(!b) return;
+  opResult=b.dataset.r;
+  $$('#opSeg button').forEach(x=>x.setAttribute('aria-pressed',String(x===b)));
+  $('#oValueLbl').textContent=opResult==='red'?'Prejuízo (R$)':'Lucro (R$)';
+  if(opResult==='void'){ $('#oValue').value='0'; return; }
+  autoValue();
+});
+['#oStake','#oOdd'].forEach(s=>$(s).addEventListener('input',()=>{ autoValue(); stakeHint(); }));
+$('#oMethod').addEventListener('change',()=>{ suggestStake(); stakeHint(); });
+function suggestStake(){
+  const m=db.methods.find(x=>x.id===$('#oMethod').value); if(!m) return;
+  const b=banca(), all=enrich(), bank=b.initial+all.reduce((s,o)=>s+o.pnl,0);
+  const exp=expectedStake(m,b,bank);
+  if(exp>0 && !$('#oStake').value) $('#oStake').value=exp.toFixed(2).replace('.',',');
+}
+function autoValue(){
+  const stake=parseNum($('#oStake').value), odd=parseNum($('#oOdd').value);
+  if(!stake) return;
+  if(opResult==='green' && odd>1) $('#oValue').value=(stake*(odd-1)).toFixed(2).replace('.',',');
+  if(opResult==='red') $('#oValue').value=stake.toFixed(2).replace('.',',');
+}
+function stakeHint(){
+  const m=db.methods.find(x=>x.id===$('#oMethod').value), h=$('#opStakeHint');
+  if(!m||!(Number(m.stakeValue)>0)){ h.textContent='Sem stake definida para este método — a operação não entra no controle de disciplina.'; return; }
+  const b=banca(), all=enrich(), bank=b.initial+all.reduce((s,o)=>s+o.pnl,0);
+  const exp=expectedStake(m,b,bank), stake=parseNum($('#oStake').value), tol=Number(m.tolerance)||0;
+  h.innerHTML = stake>exp*(1+tol/100) && stake>0
+    ? `<span class="neg">Fora do método:</span> a stake de ${esc(m.name)} é ${money(exp)} (+${pctS(tol,0)} de tolerância). Vai entrar no relatório de disciplina.`
+    : `Stake do método: ${money(exp)} · tolerância ${pctS(tol,0)}.`;
+}
+$('#opForm').addEventListener('submit',e=>{
+  const act=e.submitter?e.submitter.value:'ok';
+  if(act==='cancel') return;
+  if(act==='delete'){
+    if(editingOp && confirm('Excluir esta operação?')){ db.ops=db.ops.filter(o=>o.id!==editingOp.id); save(); toast('Operação excluída'); renderAll(); }
+    editingOp=null; opCycleId=null; return;
+  }
+  const raw=Math.abs(parseNum($('#oValue').value));
+  const data={ date:$('#oDate').value||todayISO(), methodId:$('#oMethod').value||null,
+    teamA:$('#oTeamA').value.trim(), teamB:$('#oTeamB').value.trim(), comp:$('#oComp').value.trim(),
+    market:$('#oMarket').value.trim(), stake:parseNum($('#oStake').value), odd:parseNum($('#oOdd').value),
+    result:opResult, pnl: opResult==='green'?raw:opResult==='red'?-raw:0, note:$('#oNote').value.trim() };
+  if(editingOp) Object.assign(editingOp,data);
+  else db.ops.push(Object.assign({id:uid(),bancaId:db.activeBanca,cycleId:opCycleId,seq:Date.now()},data));
+  remember('teams',data.teamA); remember('teams',data.teamB); remember('comps',data.comp);
+  save(); refreshDatalists(); renderAll();
+  toast(editingOp?'Operação atualizada':'Operação registrada');
+  editingOp=null; opCycleId=null;
+});
+function remember(list,val){
+  if(!val) return; const arr=db[list];
+  if(!arr.some(x=>x.toLowerCase()===val.toLowerCase())){ arr.push(val); arr.sort((a,b)=>a.localeCompare(b,'pt-BR')); }
+}
+function refreshDatalists(){
+  $('#dlTeams').innerHTML=db.teams.map(t=>`<option value="${esc(t)}">`).join('');
+  $('#dlComps').innerHTML=db.comps.map(t=>`<option value="${esc(t)}">`).join('');
+}
+
+/* ============================================================
+   14. DIÁLOGO: DETALHE DA OPERAÇÃO
+   ============================================================ */
+function openDetail(id){
+  const o=enrich().find(x=>x.id===id); if(!o) return;
+  detailOp=o;
+  const cyc=o.cycleId?db.cycles.find(c=>c.id===o.cycleId):null;
+  $('#detTitle').textContent=(o.teamA||o.teamB)?`${o.teamA||'?'} × ${o.teamB||'?'}`:'Operação avulsa';
+  $('#detBadge').innerHTML=resultChip(o);
+  $('#detBody').innerHTML=`
+    <dl class="kv">
+      <dt>Data</dt><dd class="mono">${fmtDate(o.date)}</dd>
+      <dt>Competição</dt><dd>${esc(o.comp||'—')}</dd>
+      <dt>Método</dt><dd>${esc(methodName(o.methodId))}${cyc?` · <span class="chip on">${esc(cyc.name)}</span>`:''}</dd>
+      <dt>Mercado</dt><dd>${esc(o.market||'—')}</dd>
+      <dt>Stake</dt><dd class="mono">${o.stake?money(o.stake):'—'}${o.odd?` · odd ${o.odd}`:''}</dd>
+      <dt>Resultado</dt><dd class="mono ${cls(o.pnl)}">${money(o.pnl)} ${o.roi!=null?`· ROI ${pctS(o.roi,1)}`:''}</dd>
+      <dt>Em unidades</dt><dd class="mono ${cls(o.pnl)}">${banca().stake?un(o.pnl/banca().stake):'—'} · ${pctS(banca().initial?o.pnl/banca().initial*100:0)} da banca</dd>
+      <dt>Banca depois</dt><dd class="mono">${money(o.after)}</dd>
+      <dt>Disciplina</dt><dd>${o.exp>0
+        ? (o.off ? `<span class="chip warn">fora do método</span> stake ${money(o.stake)} vs ${money(o.exp)} previstos · no método daria <b class="${cls(o.adjPnl)}">${money(o.adjPnl)}</b>`
+                 : '<span class="chip win">dentro do método</span>')
+        : '<span class="dim">método sem stake definida</span>'}</dd>
+    </dl>
+    <div style="margin-top:16px;border-top:1px solid var(--line);padding-top:14px">
+      <div style="font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);margin-bottom:6px">Observação</div>
+      <div style="font-size:13.5px;white-space:pre-wrap;color:${o.note?'var(--text)':'var(--muted)'}">${esc(o.note||'Sem anotação. Clique em editar para registrar por que entrou, por que fechou ou o que faria diferente.')}</div>
+    </div>`;
+  $('#dlgDetail').showModal();
+}
+$('#detClose').onclick=()=>$('#dlgDetail').close();
+$('#detEdit').onclick=()=>{ $('#dlgDetail').close(); openOp(db.ops.find(o=>o.id===detailOp.id), detailOp.cycleId); };
+$('#detDelete').onclick=()=>{ if(confirm('Excluir esta operação?')){
+  db.ops=db.ops.filter(o=>o.id!==detailOp.id); save(); $('#dlgDetail').close(); renderAll(); toast('Operação excluída'); } };
+
+/* ============================================================
+   15. DIÁLOGO: CICLO
+   ============================================================ */
+function openCycleDialog(c){
+  editingCycle=c||null;
+  $('#dlgCycleTitle').textContent=c?'Editar ciclo':'Novo ciclo';
+  $('#cMethod').innerHTML=methodOptions(c?.methodId);
+  $('#cName').value=c?.name||'';
+  $('#cInitial').value=c?String(c.initial).replace('.',','):'';
+  $('#cCount').value=c?.count??4;
+  $('#cPct').value=c?String(c.pct).replace('.',','):'5';
+  $('#cRed').value=c?String(c.reduction||0).replace('.',','):'2,5';
+  $('#cMin').value=c?String(c.minPct||0).replace('.',','):'0';
+  $('#cWithdraw').value=c?String(c.withdrawPct??50).replace('.',','):'50';
+  $('#cReset').checked=c?c.resetPct!==false:true;
+  previewPct(); $('#dlgCycle').showModal();
+}
+function previewPct(){
+  const p=parseNum($('#cPct').value), r=parseNum($('#cRed').value), m=parseNum($('#cMin').value);
+  $('#cPctPreview').textContent='Sequência: '+[0,1,2,3,4].map(i=>pctS(Math.max(m,p*Math.pow(1-r/100,i)))).join(' → ')+' …';
+}
+['#cPct','#cRed','#cMin'].forEach(s=>$(s).addEventListener('input',previewPct));
+$('#btnNewCycle').onclick=()=>openCycleDialog(null);
+$('#cycleForm').addEventListener('submit',e=>{
+  if(e.submitter&&e.submitter.value==='cancel') return;
+  const data={ name:$('#cName').value.trim()||'Ciclo sem nome', methodId:$('#cMethod').value||null,
+    initial:parseNum($('#cInitial').value), count:Math.max(1,parseInt($('#cCount').value)||1),
+    pct:parseNum($('#cPct').value)||1, reduction:parseNum($('#cRed').value), minPct:parseNum($('#cMin').value),
+    withdrawPct:parseNum($('#cWithdraw').value), resetPct:$('#cReset').checked };
+  if(editingCycle){ Object.assign(editingCycle,data); editingCycle=null; save(); toast('Ciclo atualizado'); renderAll(); }
+  else { const nc=Object.assign({id:uid(),bancaId:db.activeBanca,createdAt:Date.now()},data);
+    db.cycles.push(nc); currentCycle=nc.id; save(); toast('Ciclo criado'); showView('cycle'); }
+});
+
+/* ============================================================
+   16. MÉTODOS
+   ============================================================ */
+function stakeLabel(t){ return t==='pct'?'% da banca':t==='un'?'Unidades':'Valor (R$)'; }
+function stakeDesc(m){
+  const b=banca();
+  if(!(Number(m.stakeValue)>0)) return 'stake não definida';
+  if(m.stakeType==='pct') return `${pctS(m.stakeValue)} da banca`;
+  if(m.stakeType==='un') return `${m.stakeValue}u (${money(m.stakeValue*(b?.stake||0))})`;
+  return money(m.stakeValue);
+}
+function renderMethods(){
+  const box=$('#methodsList'), all=enrich();
+  if(!db.methods.length){ box.innerHTML=`<div class="empty" style="border:0"><strong>Nenhum método salvo</strong>
+    Crie um método com nome, definição e stake para reaproveitar em ciclos e operações.</div>`; return; }
+  box.innerHTML=db.methods.map(m=>{
+    const ops=all.filter(o=>o.methodId===m.id), s=summarize(ops);
+    return `<div class="list-item">
+      <div style="flex:1;min-width:0">
+        <h4>${esc(m.name)}</h4>
+        <p>${esc(m.definition||'Sem definição.')}</p>
+        <div class="figures" style="margin:12px 0 0">
+          <div class="fig"><small>Stake</small><span>${stakeDesc(m)}</span></div>
+          <div class="fig"><small>Operações</small><span>${s.n}</span></div>
+          <div class="fig"><small>Resultado</small><span class="${cls(s.pnl)}">${fmtV(s.pnl)}</span></div>
+          <div class="fig"><small>ROI</small><span class="${cls(s.roi||0)}">${s.roi==null?'—':pctS(s.roi,1)}</span></div>
+          <div class="fig"><small>Acerto</small><span>${pctS(s.hit,0)}</span></div>
+          <div class="fig"><small>Fora do método</small><span class="${s.off?'neg':'dim'}">${s.off}</span></div>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px">
+        <button class="icon-btn" data-medit="${m.id}">✎</button>
+        <button class="icon-btn danger" data-mdel="${m.id}">✕</button>
+      </div></div>`;
+  }).join('');
+}
+$('#methodsList').addEventListener('click',e=>{
+  const ed=e.target.closest('[data-medit]'), dl=e.target.closest('[data-mdel]');
+  if(ed) openMethodDialog(db.methods.find(m=>m.id===ed.dataset.medit));
+  if(dl && confirm('Excluir este método? As operações ficam sem método.')){
+    const id=dl.dataset.mdel;
+    db.methods=db.methods.filter(m=>m.id!==id);
+    db.ops.forEach(o=>{ if(o.methodId===id) o.methodId=null; });
+    db.cycles.forEach(c=>{ if(c.methodId===id) c.methodId=null; });
+    save(); renderMethods(); toast('Método excluído');
+  }
+});
+function openMethodDialog(m){
+  editingMethod=m||null;
+  $('#dlgMethodTitle').textContent=m?'Editar método':'Novo método';
+  $('#mName').value=m?.name||''; $('#mDef').value=m?.definition||'';
+  $('#mStakeType').value=m?.stakeType||'fixo';
+  $('#mStakeVal').value=m&&m.stakeValue?String(m.stakeValue).replace('.',','):'';
+  $('#mTol').value=m?String(m.tolerance??5).replace('.',','):'5';
+  $('#mStakeLbl').textContent=stakeLabel($('#mStakeType').value);
+  $('#dlgMethod').showModal();
+}
+$('#mStakeType').addEventListener('change',e=>{ $('#mStakeLbl').textContent=stakeLabel(e.target.value); });
+$('#btnNewMethod').onclick=()=>openMethodDialog(null);
+$('#methodForm').addEventListener('submit',e=>{
+  if(e.submitter&&e.submitter.value==='cancel') return;
+  const name=$('#mName').value.trim(); if(!name) return;
+  const data={name, definition:$('#mDef').value.trim(), stakeType:$('#mStakeType').value,
+    stakeValue:parseNum($('#mStakeVal').value), tolerance:parseNum($('#mTol').value)};
+  if(editingMethod){ Object.assign(editingMethod,data); toast('Método atualizado'); }
+  else db.methods.push(Object.assign({id:uid()},data)), toast('Método criado');
+  editingMethod=null; save(); renderAll();
+});
+
+/* ============================================================
+   17. CADASTROS
+   ============================================================ */
+function renderRegistry(){
+  const all=enrich();
+  $('#bancasList').innerHTML=db.bancas.map(b=>{
+    const ops=db.ops.filter(o=>o.bancaId===b.id), pnl=ops.reduce((s,o)=>s+o.pnl,0);
+    return `<div class="list-item">
+      <div style="flex:1">
+        <h4>${esc(b.name)} ${b.id===db.activeBanca?'<span class="chip on" style="margin-left:6px">ativa</span>':''}</h4>
+        <div class="figures" style="margin:10px 0 0">
+          <div class="fig"><small>Inicial</small><span>${money(b.initial)}</span></div>
+          <div class="fig"><small>Atual</small><span>${money(b.initial+pnl)}</span></div>
+          <div class="fig"><small>Unidade</small><span>${money(b.stake)}</span></div>
+          <div class="fig"><small>Operações</small><span>${ops.length}</span></div>
+          <div class="fig"><small>Resultado</small><span class="${cls(pnl)}">${money(pnl)}</span></div>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px">
+        ${b.id!==db.activeBanca?`<button class="btn ghost sm" data-bsel="${b.id}">Ativar</button>`:''}
+        <button class="icon-btn" data-bedit="${b.id}">✎</button>
+        ${db.bancas.length>1?`<button class="icon-btn danger" data-bdel="${b.id}">✕</button>`:''}
+      </div></div>`;
+  }).join('');
+  const cloud=(list,el)=>{
+    $(el).innerHTML=db[list].length? db[list].map(t=>`<span class="tag">${esc(t)}<button data-rm="${list}" data-v="${esc(t)}">✕</button></span>`).join('')
+      : `<span class="dim" style="font-size:13px">Nada salvo ainda — o que você digitar nas operações aparece aqui.</span>`;
+  };
+  cloud('teams','#teamsCloud'); cloud('comps','#compsCloud');
+}
+$('#view-registry').addEventListener('click',e=>{
+  const add=e.target.closest('[data-add]'), rm=e.target.closest('[data-rm]'),
+        sel=e.target.closest('[data-bsel]'), bed=e.target.closest('[data-bedit]'), bdel=e.target.closest('[data-bdel]');
+  if(add){ const v=prompt(add.dataset.add==='teams'?'Nome do time':'Nome da competição');
+    if(v&&v.trim()){ remember(add.dataset.add,v.trim()); save(); renderRegistry(); refreshDatalists(); } }
+  if(rm){ db[rm.dataset.rm]=db[rm.dataset.rm].filter(x=>x!==rm.dataset.v); save(); renderRegistry(); refreshDatalists(); }
+  if(sel){ db.activeBanca=sel.dataset.bsel; save(); currentCycle=null; renderAll(); toast('Banca ativada'); }
+  if(bed) openBancaDialog(db.bancas.find(b=>b.id===bed.dataset.bedit));
+  if(bdel){ const id=bdel.dataset.bdel;
+    if(confirm('Excluir esta banca e TODAS as operações e ciclos dela?')){
+      db.bancas=db.bancas.filter(b=>b.id!==id); db.ops=db.ops.filter(o=>o.bancaId!==id); db.cycles=db.cycles.filter(c=>c.bancaId!==id);
+      if(db.activeBanca===id) db.activeBanca=db.bancas[0]?.id;
+      save(); renderAll(); toast('Banca excluída'); } }
+});
+function openBancaDialog(b){
+  editingBanca=b||null;
+  $('#dlgBancaTitle').textContent=b?'Editar banca':'Nova banca';
+  $('#bName').value=b?.name||''; $('#bInitial').value=b?String(b.initial).replace('.',','):'';
+  $('#bStake').value=b?String(b.stake).replace('.',','):'';
+  $('#dlgBanca').showModal();
+}
+$('#btnNewBanca').onclick=()=>openBancaDialog(null);
+$('#bancaForm').addEventListener('submit',e=>{
+  if(e.submitter&&e.submitter.value==='cancel') return;
+  const data={name:$('#bName').value.trim()||'Banca', initial:parseNum($('#bInitial').value), stake:parseNum($('#bStake').value)};
+  if(editingBanca){ Object.assign(editingBanca,data); toast('Banca atualizada'); }
+  else { const nb=Object.assign({id:uid(),createdAt:Date.now()},data); db.bancas.push(nb); db.activeBanca=nb.id; toast('Banca criada'); }
+  editingBanca=null; save(); renderAll();
+});
+
+/* ============================================================
+   18. BACKUP
+   ============================================================ */
+$('#btnExport').onclick=()=>{
+  const blob=new Blob([JSON.stringify(db,null,2)],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download=`banca-${todayISO()}.json`; a.click(); URL.revokeObjectURL(a.href); toast('Backup exportado');
+};
+$('#btnImport').onclick=()=>$('#fileImport').click();
+$('#fileImport').onchange=e=>{
+  const f=e.target.files[0]; if(!f) return;
+  const rd=new FileReader();
+  rd.onload=()=>{
+    try{
+      const inc=JSON.parse(rd.result);
+      if(!confirm('Substituir os dados atuais pelo arquivo importado?')) return;
+      db = inc.v===2 ? Object.assign(BLANK(),inc) : migrate(inc);
+      if(!db.bancas.length){ db.bancas=[{id:uid(),name:'Banca principal',initial:1000,stake:20,createdAt:Date.now()}]; db.activeBanca=db.bancas[0].id; }
+      if(!db.activeBanca) db.activeBanca=db.bancas[0].id;
+      save(); currentCycle=null; refreshDatalists(); showView('dash'); toast('Dados importados');
+    }catch(err){ toast('Arquivo inválido — use um backup exportado aqui.'); }
+  };
+  rd.readAsText(f); e.target.value='';
+};
+
+/* ============================================================
+   19. INÍCIO
+   ============================================================ */
+$$('#unitToggle button').forEach(b=>b.classList.toggle('on', b.dataset.u===db.settings.unit));
+refreshDatalists();
+if(db.ops.length||db.cycles.length) save();   // persiste apenas migração de dados existentes
+showView('dash');
+</script>
+
+<!-- ============================================================
+     PONTE COM O FIREBASE (módulo isolado)
+     Se falhar (offline, arquivo local), o app segue funcionando local.
+     ============================================================ -->
+<script type="module">
+const cfg = (()=>{ try{ const s=localStorage.getItem('fb.config'); if(s) return JSON.parse(s); }catch(e){}
+  return window.FIREBASE_CONFIG||{}; })();
+if(!cfg.apiKey || !cfg.projectId){ document.dispatchEvent(new CustomEvent('fb-off',{detail:'sem-config'})); }
+else{
+  const V = window.FIREBASE_SDK_VERSION || '12.12.0';
+  const chains = [
+    n=>`https://www.gstatic.com/firebasejs/${V}/firebase-${n}.js`,
+    n=>`https://www.gstatic.com/firebasejs/11.10.0/firebase-${n}.js`,
+    n=>`https://esm.sh/firebase@12/${n}`
+  ];
+  let mods=null;
+  for(const url of chains){
+    try{ mods = await Promise.all([import(url('app')),import(url('auth')),import(url('firestore'))]); break; }
+    catch(e){ /* tenta o próximo CDN */ }
+  }
+  if(!mods){ document.dispatchEvent(new CustomEvent('fb-off',{detail:'sdk'})); }
+  else{
+    try{
+      const [A,AU,FS] = mods;
+      const app = A.initializeApp(cfg);
+      const auth = AU.getAuth(app);
+      let fs;
+      try{ fs = FS.initializeFirestore(app,{localCache:FS.persistentLocalCache({tabManager:FS.persistentMultipleTabManager()})}); }
+      catch(e){ fs = FS.getFirestore(app); }
+      await AU.setPersistence(auth, AU.browserLocalPersistence).catch(()=>{});
+      window.FB = {
+        auth, fs, cfg,
+        onAuth:(cb)=>AU.onAuthStateChanged(auth,cb),
+        signIn:(e,p)=>AU.signInWithEmailAndPassword(auth,e,p),
+        signUp:(e,p)=>AU.createUserWithEmailAndPassword(auth,e,p),
+        signOut:()=>AU.signOut(auth),
+        reset:(e)=>AU.sendPasswordResetEmail(auth,e),
+        col:(...p)=>FS.collection(fs,...p),
+        doc:(...p)=>FS.doc(fs,...p),
+        getDoc:FS.getDoc, getDocs:FS.getDocs, setDoc:FS.setDoc, deleteDoc:FS.deleteDoc,
+        onSnapshot:FS.onSnapshot, writeBatch:()=>FS.writeBatch(fs)
+      };
+      document.dispatchEvent(new CustomEvent('fb-ready'));
+    }catch(e){ console.error(e); document.dispatchEvent(new CustomEvent('fb-off',{detail:'init'})); }
+  }
+}
+</script>
+
+<style>
+#authBar{display:none;align-items:center;gap:12px;flex-wrap:wrap;padding:11px 18px;
+  background:linear-gradient(90deg,rgba(245,184,65,.14),rgba(245,184,65,.04));
+  border-bottom:1px solid rgba(245,184,65,.28);font-size:13px;color:var(--text)}
+#authBar.on{display:flex}
+#authBar b{font-family:var(--display);font-size:15px;letter-spacing:.06em;text-transform:uppercase}
+#authBar span{color:var(--muted)}
+#btnAccount{display:inline-flex;align-items:center;gap:8px}
+.avatar{width:20px;height:20px;border-radius:50%;background:var(--amber);color:#171003;display:grid;place-items:center;
+  font-family:var(--mono);font-size:11px;font-weight:700;flex:none}
+#authSeg button[aria-pressed=true]{background:var(--raised);border-color:var(--amber);color:var(--amber)}
+.cloud-dot{width:7px;height:7px;border-radius:50%;background:var(--mint);flex:none;display:inline-block}
+.cloud-dot.off{background:var(--muted)} .cloud-dot.sync{background:var(--amber)}
+</style>
+
+<dialog id="dlgAuth">
+  <form id="authForm">
+    <div class="dlg-head"><h3 id="authTitle">Entrar na sua conta</h3></div>
+    <div class="dlg-body">
+      <div class="seg" id="authSeg">
+        <button type="button" data-m="in" aria-pressed="true">Entrar</button>
+        <button type="button" data-m="up" aria-pressed="false">Criar conta</button>
+      </div>
+      <p class="hint" id="authIntro" style="margin-top:0">Seus dados ficam na sua conta e sincronizam entre celular e computador.</p>
+      <label class="field"><span>E-mail</span><input type="email" id="auEmail" required autocomplete="email" placeholder="voce@email.com"></label>
+      <label class="field"><span>Senha</span><input type="password" id="auPass" required minlength="6" autocomplete="current-password" placeholder="mínimo 6 caracteres"></label>
+      <div id="authMsg" class="hint" style="margin:0"></div>
+    </div>
+    <div class="dlg-foot">
+      <button type="button" class="btn ghost sm" id="auReset">Esqueci a senha</button>
+      <button type="button" class="btn ghost" id="auCancel">Fechar</button>
+      <button type="submit" class="btn primary" id="auSubmit">Entrar</button>
+    </div>
+  </form>
+</dialog>
+
+<dialog id="dlgAccount">
+  <div class="dlg-head"><h3>Sua conta</h3></div>
+  <div class="dlg-body" id="accBody"></div>
+  <div class="dlg-foot">
+    <button class="btn ghost danger" id="accOut">Sair da conta</button>
+    <button class="btn ghost" id="accClose">Fechar</button>
+  </div>
+</dialog>
+
+<script>
+/* ============================================================
+   20. CONTA, NUVEM E MODO DEMONSTRAÇÃO
+   ============================================================ */
+const CLOUD_ON = !!(window.FIREBASE_CONFIG && window.FIREBASE_CONFIG.apiKey) ||
+                 !!(()=>{ try{ return JSON.parse(localStorage.getItem('fb.config')||'{}').apiKey; }catch(e){ return false; } })();
+const AUTH = { user:null, ready:false, applying:false, demo:false, unsubs:[], status:'off' };
+const COLS = ['bancas','methods','ops','cycles'];
+let SYNCED = { bancas:{}, methods:{}, ops:{}, cycles:{}, meta:'' };
+let pushTimer=null;
+
+/* ---- interface da barra e do botão de conta ---- */
+document.querySelector('.topbar').insertAdjacentHTML('afterend',
+  `<div id="authBar">
+     <b>Modo demonstração</b>
+     <span>Você está vendo dados de exemplo. Crie sua conta gratuita para registrar suas operações.</span>
+     <button class="btn primary sm" id="barSignup" style="margin-left:auto">Criar conta</button>
+     <button class="btn ghost sm" id="barSignin">Entrar</button>
+   </div>`);
+document.querySelector('.topbar .right').insertAdjacentHTML('afterbegin',
+  `<button class="btn ghost sm" id="btnAccount"><i class="cloud-dot off"></i><span id="accLabel">Entrar</span></button>`);
+
+const $a=s=>document.querySelector(s);
+function setStatus(st){
+  AUTH.status=st;
+  const dot=$a('#btnAccount .cloud-dot');
+  dot.className='cloud-dot'+(st==='sync'?' sync':st==='on'?'':' off');
+  dot.title = st==='on'?'Sincronizado':st==='sync'?'Sincronizando...':'Fora da conta';
+}
+function paintAccount(){
+  const l=$a('#accLabel');
+  if(AUTH.user){ const n=(AUTH.user.email||'?')[0].toUpperCase();
+    $a('#btnAccount').innerHTML=`<i class="cloud-dot"></i><span class="avatar">${n}</span><span id="accLabel">Conta</span>`; }
+  else { $a('#btnAccount').innerHTML=`<i class="cloud-dot off"></i><span id="accLabel">Entrar</span>`; }
+  $a('#authBar').classList.toggle('on', CLOUD_ON && !AUTH.user);
+}
+
+/* ---- portão: modo visitante é somente leitura ---- */
+const LOCKED = ['[data-newop]','#btnNewCycle','#btnNewMethod','#btnNewBanca','#btnCycleOp','#btnImport',
+  '#btnEditCycle','#btnDeleteCycle','[data-cact]','[data-medit]','[data-mdel]','[data-add]','[data-rm]',
+  '[data-bsel]','[data-bedit]','[data-bdel]','#detEdit','#detDelete'].join(',');
+document.addEventListener('click',e=>{
+  if(!CLOUD_ON || AUTH.user) return;
+  if(e.target.closest(LOCKED)){
+    e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
+    openAuth('up','Crie sua conta para registrar e salvar suas operações.');
+  }
+},true);
+
+/* ---- diálogo de autenticação ---- */
+let authMode='in';
+function openAuth(mode='in', msg=''){
+  if(!window.FB){ toast('Conecte-se à internet para entrar na sua conta.'); return; }
+  setAuthMode(mode);
+  $a('#authMsg').innerHTML = msg?`<span style="color:var(--amber)">${msg}</span>`:'';
+  $a('#dlgAuth').showModal(); setTimeout(()=>$a('#auEmail').focus(),50);
+}
+function setAuthMode(m){
+  authMode=m;
+  document.querySelectorAll('#authSeg button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.m===m)));
+  $a('#authTitle').textContent = m==='in'?'Entrar na sua conta':'Criar sua conta';
+  $a('#auSubmit').textContent = m==='in'?'Entrar':'Criar conta';
+  $a('#auPass').autocomplete = m==='in'?'current-password':'new-password';
+  $a('#authIntro').textContent = m==='in'
+    ? 'Seus dados sincronizam entre celular e computador.'
+    : 'Basta e-mail e senha. O banco de dados da sua conta é criado automaticamente.';
+}
+document.querySelector('#authSeg').addEventListener('click',e=>{ const b=e.target.closest('button'); if(b) setAuthMode(b.dataset.m); });
+$a('#auCancel').onclick=()=>$a('#dlgAuth').close();
+$a('#barSignup').onclick=()=>openAuth('up');
+$a('#barSignin').onclick=()=>openAuth('in');
+$a('#btnAccount').onclick=()=>{ AUTH.user?openAccount():openAuth('in'); };
+const ERRS={'auth/invalid-email':'E-mail inválido.','auth/user-not-found':'Não achei uma conta com esse e-mail.',
+  'auth/wrong-password':'Senha incorreta.','auth/invalid-credential':'E-mail ou senha incorretos.',
+  'auth/email-already-in-use':'Esse e-mail já tem conta. Use "Entrar".','auth/weak-password':'Senha muito curta — use 6 caracteres ou mais.',
+  'auth/too-many-requests':'Muitas tentativas. Aguarde alguns minutos.','auth/network-request-failed':'Sem conexão com o servidor.',
+  'auth/operation-not-allowed':'Ative o provedor E-mail/senha no Console do Firebase.'};
+$a('#authForm').addEventListener('submit',async e=>{
+  e.preventDefault();
+  const email=$a('#auEmail').value.trim(), pass=$a('#auPass').value;
+  const btn=$a('#auSubmit'); btn.disabled=true; $a('#authMsg').textContent='Conectando...';
+  try{
+    if(authMode==='in') await FB.signIn(email,pass); else await FB.signUp(email,pass);
+    $a('#dlgAuth').close(); $a('#authMsg').textContent='';
+  }catch(err){ $a('#authMsg').innerHTML=`<span class="neg">${ERRS[err.code]||err.message}</span>`; }
+  finally{ btn.disabled=false; }
+});
+$a('#auReset').onclick=async()=>{
+  const email=$a('#auEmail').value.trim();
+  if(!email) return $a('#authMsg').innerHTML='<span class="neg">Digite seu e-mail primeiro.</span>';
+  try{ await FB.reset(email); $a('#authMsg').innerHTML='<span class="pos">Enviei um link de redefinição para seu e-mail.</span>'; }
+  catch(err){ $a('#authMsg').innerHTML=`<span class="neg">${ERRS[err.code]||err.message}</span>`; }
+};
+function openAccount(){
+  const n=db.ops.length, c=db.cycles.length;
+  $a('#accBody').innerHTML=`<dl class="kv">
+    <dt>E-mail</dt><dd>${esc(AUTH.user.email)}</dd>
+    <dt>Situação</dt><dd><span class="chip win">dados na nuvem</span></dd>
+    <dt>Guardado</dt><dd class="mono">${n} operações · ${c} ciclos · ${db.bancas.length} banca(s)</dd>
+    <dt>Sincronia</dt><dd>Automática. Funciona offline e envia quando a conexão volta.</dd>
+  </dl>
+  <p class="hint" style="margin:14px 0 0">Use <b>Exportar</b> na barra do topo para guardar um backup em arquivo.</p>`;
+  $a('#dlgAccount').showModal();
+}
+$a('#accClose').onclick=()=>$a('#dlgAccount').close();
+$a('#accOut').onclick=async()=>{ $a('#dlgAccount').close(); await FB.signOut(); };
+
+/* ---- gravação: local quando visitante, nuvem quando logado ---- */
+const _localSave = save;
+save = function(){
+  if(AUTH.user){ cloudPush(); return; }
+  if(AUTH.demo) return;          // nunca grava a demonstração por cima dos dados locais
+  _localSave();
+};
+function clean(o){ return JSON.parse(JSON.stringify(o)); }
+function cloudPush(){
+  if(!AUTH.user||AUTH.applying||!window.FB) return;
+  setStatus('sync');
+  clearTimeout(pushTimer); pushTimer=setTimeout(flushPush,600);
+}
+async function flushPush(){
+  if(!AUTH.user||!window.FB) return;
+  const uid=AUTH.user.uid, jobs=[];
+  COLS.forEach(col=>{
+    const cur={};
+    (db[col]||[]).forEach(it=>{ if(it&&it.id) cur[it.id]=JSON.stringify(it); });
+    Object.keys(cur).forEach(id=>{ if(cur[id]!==SYNCED[col][id]) jobs.push({t:'set',col,id}); });
+    Object.keys(SYNCED[col]).forEach(id=>{ if(!(id in cur)) jobs.push({t:'del',col,id}); });
+    SYNCED[col]=cur;
+  });
+  const meta={activeBanca:db.activeBanca,settings:db.settings,teams:db.teams,comps:db.comps,
+              email:AUTH.user.email,updatedAt:Date.now()};
+  const mj=JSON.stringify(meta);
+  if(mj!==SYNCED.meta){ jobs.push({t:'meta'}); SYNCED.meta=mj; }
+  try{
+    for(let i=0;i<jobs.length;i+=400){
+      const b=FB.writeBatch();
+      jobs.slice(i,i+400).forEach(j=>{
+        if(j.t==='meta') b.set(FB.doc('users',uid), clean(meta), {merge:true});
+        else if(j.t==='set') b.set(FB.doc('users',uid,j.col,j.id), clean(db[j.col].find(x=>x.id===j.id)));
+        else b.delete(FB.doc('users',uid,j.col,j.id));
+      });
+      await b.commit();
+    }
+    setStatus('on');
+  }catch(err){ console.error(err); setStatus('off'); toast('Não consegui salvar na nuvem: '+(err.code||err.message)); }
+}
+
+/* ---- escuta em tempo real ---- */
+function subscribe(){
+  const uid=AUTH.user.uid;
+  COLS.forEach(col=>{
+    AUTH.unsubs.push(FB.onSnapshot(FB.col('users',uid,col), snap=>{
+      AUTH.applying=true;
+      const arr=[]; const map={};
+      snap.forEach(d=>{ const v=d.data(); v.id=d.id; arr.push(v); map[d.id]=JSON.stringify(v); });
+      db[col]=arr; SYNCED[col]=map;
+      AUTH.applying=false;
+      if(!db.bancas.length && col==='bancas') seedBanca();
+      if(db.activeBanca && !db.bancas.some(b=>b.id===db.activeBanca) && db.bancas[0]) db.activeBanca=db.bancas[0].id;
+      renderAll();
+    },err=>{ console.error(err); toast('Sem acesso aos dados: verifique as regras do Firestore.'); }));
+  });
+  AUTH.unsubs.push(FB.onSnapshot(FB.doc('users',uid), snap=>{
+    const v=snap.data(); if(!v) return;
+    AUTH.applying=true;
+    if(v.activeBanca) db.activeBanca=v.activeBanca;
+    if(v.settings) db.settings=v.settings;
+    if(Array.isArray(v.teams)) db.teams=v.teams;
+    if(Array.isArray(v.comps)) db.comps=v.comps;
+    SYNCED.meta=JSON.stringify({activeBanca:db.activeBanca,settings:db.settings,teams:db.teams,comps:db.comps,
+      email:AUTH.user.email,updatedAt:v.updatedAt});
+    AUTH.applying=false; refreshDatalists(); renderAll();
+  }));
+}
+function seedBanca(){
+  db.bancas=[{id:uid(),name:'Banca principal',initial:1000,stake:20,createdAt:Date.now()}];
+  db.activeBanca=db.bancas[0].id; SYNCED.bancas={}; cloudPush();
+}
+function freshAccount(){
+  const d=BLANK();
+  d.bancas=[{id:uid(),name:'Banca principal',initial:1000,stake:20,createdAt:Date.now()}];
+  d.activeBanca=d.bancas[0].id;
+  return d;
+}
+function readLocal(){
+  try{ const raw=localStorage.getItem('gestao.v2'); if(raw) return Object.assign(BLANK(),JSON.parse(raw)); }catch(e){}
+  try{ const old=localStorage.getItem('ciclos.v1'); if(old) return migrate(JSON.parse(old)); }catch(e){}
+  return null;
+}
+
+/* ---- entrada e saída da conta ---- */
+async function onLogin(user){
+  AUTH.user=user; AUTH.demo=false; paintAccount(); setStatus('sync');
+  const uid=user.uid;
+  try{
+    const meta=await FB.getDoc(FB.doc('users',uid));
+    const opsSnap=await FB.getDocs(FB.col('users',uid,'ops'));
+    const isNew = !meta.exists() && opsSnap.empty;
+    if(isNew){
+      const local=readLocal();
+      const hasLocal = local && ((local.ops||[]).length || (local.cycles||[]).length);
+      const bring = hasLocal && confirm(`Encontrei ${local.ops.length} operações salvas neste navegador. Quer enviá-las para a sua conta?`);
+      db = bring ? local : freshAccount();
+      if(bring && !db.bancas.length){ db.bancas=freshAccount().bancas; db.activeBanca=db.bancas[0].id; }
+      SYNCED={bancas:{},methods:{},ops:{},cycles:{},meta:''};
+      await flushPush();
+      toast(bring?'Dados enviados para sua conta':'Conta criada — banco de dados pronto');
+    }
+    subscribe();
+    setStatus('on');
+    currentCycle=null; refreshDatalists(); showView('dash');
+  }catch(err){ console.error(err); setStatus('off'); toast('Erro ao abrir sua conta: '+(err.code||err.message)); }
+}
+function onLogout(){
+  AUTH.unsubs.forEach(u=>{ try{u()}catch(e){} }); AUTH.unsubs=[];
+  AUTH.user=null; SYNCED={bancas:{},methods:{},ops:{},cycles:{},meta:''};
+  paintAccount(); setStatus('off');
+  loadGuest(); currentCycle=null; showView('dash');
+}
+function loadGuest(){
+  const local=readLocal();
+  if(local && ((local.ops||[]).length||(local.cycles||[]).length)){ db=local; AUTH.demo=false; }
+  else { db=demoData(); AUTH.demo=true; }
+  refreshDatalists();
+}
+
+/* ---- dados de demonstração (visitante) ---- */
+function demoData(){
+  let s=7; const rnd=()=>{ s=(s*1103515245+12345)%2147483648; return s/2147483648; };
+  const d=BLANK();
+  const b={id:'demo-b',name:'Banca demonstração',initial:1000,stake:25,createdAt:Date.now()};
+  d.bancas=[b]; d.activeBanca=b.id;
+  d.methods=[
+    {id:'dm1',name:'Lay 0x0 até 60’',definition:'Entrada em jogos com média alta de gols, saída no 60º minuto ou no primeiro gol.',stakeType:'fixo',stakeValue:50,tolerance:5},
+    {id:'dm2',name:'Over 0.5 HT',definition:'Favorito jogando em casa, entrada antes do intervalo.',stakeType:'pct',stakeValue:3,tolerance:10},
+    {id:'dm3',name:'Cash out escalonado',definition:'Saída parcial em 50% do alvo, restante no fim do jogo.',stakeType:'un',stakeValue:2,tolerance:10}
+  ];
+  const times=['Bahia','Vitória','Flamengo','Palmeiras','Grêmio','Internacional','Fortaleza','Ceará','Athletico','Cruzeiro','Santos','Corinthians'];
+  const comps=['Brasileirão Série A','Copa do Nordeste','Copa do Brasil','Libertadores'];
+  d.teams=[...times].sort((a,b)=>a.localeCompare(b,'pt-BR')); d.comps=[...comps];
+  const hoje=new Date(); let seq=1;
+  for(let i=44;i>=0;i--){
+    const day=new Date(hoje); day.setDate(day.getDate()-Math.floor(i*1.6));
+    const date=new Date(day.getTime()-day.getTimezoneOffset()*6e4).toISOString().slice(0,10);
+    const m=d.methods[Math.floor(rnd()*3)];
+    const stakeBase = m.stakeType==='fixo'?50:m.stakeType==='pct'?32:50;
+    const solto = rnd()<0.18;
+    const stake = solto? Math.round(stakeBase*(2+rnd())) : stakeBase;
+    const green = rnd()<0.62;
+    const a=times[Math.floor(rnd()*times.length)]; let v=times[Math.floor(rnd()*times.length)]; if(v===a) v=times[(times.indexOf(a)+3)%times.length];
+    d.ops.push({id:'d'+i,bancaId:b.id,cycleId:null,date,teamA:a,teamB:v,comp:comps[Math.floor(rnd()*comps.length)],
+      methodId:m.id,market:green?'entrada no plano':'entrada tardia',stake,odd:0,result:green?'green':'red',
+      pnl: green? Math.round(stake*(0.35+rnd()*0.5)) : -Math.round(stake*(0.6+rnd()*0.4)),
+      note: solto?'Entrei com stake acima do método para tentar recuperar.':'',seq:seq++});
+  }
+  const c={id:'demo-c',bancaId:b.id,name:'Ciclo demonstração',methodId:'dm1',initial:500,count:3,pct:5,
+    reduction:2.5,minPct:0,withdrawPct:50,resetPct:true,createdAt:Date.now()};
+  d.cycles=[c];
+  let bank=500;
+  for(let i=0;i<12;i++){
+    const pct=5*Math.pow(0.975,i), lucro=Math.round(bank*pct/100*100)/100;
+    const day=new Date(hoje); day.setDate(day.getDate()-(12-i));
+    d.ops.push({id:'dc'+i,bancaId:b.id,cycleId:c.id,
+      date:new Date(day.getTime()-day.getTimezoneOffset()*6e4).toISOString().slice(0,10),
+      teamA:times[i%times.length],teamB:times[(i+5)%times.length],comp:comps[i%comps.length],methodId:'dm1',
+      market:'lay 0x0',stake:50,odd:0,result:'green',pnl:lucro,note:'',seq:seq++});
+    bank+=lucro;
+  }
+  return d;
+}
+
+/* ---- inicialização da nuvem ---- */
+document.addEventListener('fb-ready',()=>{
+  AUTH.ready=true;
+  FB.onAuth(u=>{ if(u) onLogin(u); else onLogout(); });
+});
+document.addEventListener('fb-off',e=>{
+  if(CLOUD_ON){ toast('Não consegui carregar o Firebase — usando os dados deste navegador.'); }
+  paintAccount();
+});
+if(CLOUD_ON){ loadGuest(); paintAccount(); showView('dash'); }
+else { paintAccount(); $a('#btnAccount').style.display='none'; }
+</script>
+
+</body>
+</html>

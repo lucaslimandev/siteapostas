@@ -1,0 +1,32 @@
+:root {
+  --ink: #0a1018;
+  --surface: #121b28;
+  --surface-2: #182333;
+  --raised: #1e2b3d;
+  --line: rgba(255, 255, 255, 0.09);
+  --line-strong: rgba(255, 255, 255, 0.16);
+  --text: #e9eef7;
+  --muted: #8496b0;
+
+  --amber: #f5b841;
+  --amber-dim: rgba(245, 184, 65, 0.14);
+  --mint: #3ddc97;
+  --mint-dim: rgba(61, 220, 151, 0.13);
+  --coral: #ff6b61;
+  --coral-dim: rgba(255, 107, 97, 0.13);
+  --sky: #5aa9ff;
+  --violet: #b48bff;
+  --sand: #e8a76a;
+
+  --radius: 14px;
+  --radius-sm: 10px;
+  --radius-lg: 18px;
+  --shadow-card: 0 1px 0 rgba(255, 255, 255, 0.03) inset, 0 12px 30px rgba(0, 0, 0, 0.18);
+  --shadow-pop: 0 30px 80px rgba(0, 0, 0, 0.6);
+
+  --display: 'Barlow Condensed', system-ui, sans-serif;
+  --body: 'Archivo', system-ui, -apple-system, sans-serif;
+  --mono: 'Roboto Mono', ui-monospace, monospace;
+
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+}

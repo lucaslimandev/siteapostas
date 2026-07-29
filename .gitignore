@@ -1,0 +1,11 @@
+node_modules/
+dist/
+.firebase/
+.firebaserc.local
+
+# Segredos — NUNCA commitar
+.env
+.env.local
+.env.*.local
+serviceAccountKey.json
+*-firebase-adminsdk-*.json
