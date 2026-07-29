@@ -158,19 +158,19 @@ export default function Dashboard() {
                   {last.length ? (
                     last.map((o) => (
                       <tr className="clickable" key={o.id} onClick={() => openDetail(o.id)}>
-                        <td className="l mono" style={{ width: 70 }}>
+                        <td className="l mono" data-label="Data" style={{ width: 70 }}>
                           {fmtDate(o.date)}
                         </td>
-                        <td className="l">
+                        <td className="l" data-label="Jogo">
                           {o.teamA || o.teamB ? `${o.teamA || '?'} × ${o.teamB || '?'}` : <span className="dim">sem jogo</span>}
                           <span className="comp">
                             {o.comp} {o.cycleId ? '· ciclo' : ''}
                           </span>
                         </td>
-                        <td className="l dim" style={{ fontSize: 12 }}>
+                        <td className="l dim" data-label="Método" style={{ fontSize: 12 }}>
                           {methodName(db.methods, o.methodId)}
                         </td>
-                        <td>
+                        <td data-label="Resultado">
                           <ResultChip result={o.result} pnl={o.pnl} banca={banca} unit={unit} />
                         </td>
                       </tr>

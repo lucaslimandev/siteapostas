@@ -71,8 +71,9 @@ main{max-width:1320px;margin:0 auto;padding:24px 18px 90px}
 .page-head h1{font-size:30px}
 .page-head p{color:var(--muted);font-size:13px;margin:2px 0 0;max-width:66ch}
 .eyebrow{color:var(--amber);font-size:10.5px;letter-spacing:.2em;text-transform:uppercase;font-weight:600;font-family:var(--body)}
-.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow-card)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow-card);min-width:0}
 .grid{display:grid;gap:14px}
+.grid>*{min-width:0}
 .two-col{grid-template-columns:1fr 380px;align-items:start}
 .section-title{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px;flex-wrap:wrap}
 .section-title h3{font-size:17px;letter-spacing:.09em}
@@ -136,6 +137,37 @@ td .comp{color:var(--muted);font-size:11px;display:block}
 .sep-row td{background:var(--surface-2);border-top:1px solid var(--line-strong);font-family:var(--display);
   font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--amber);padding:7px 10px}
 
+/* ---- tabelas viram cartões no celular ---- */
+@media(max-width:640px){
+  .table-wrap{overflow-x:visible;-webkit-overflow-scrolling:auto}
+  .table-wrap table{min-width:0!important;width:100%;font-size:12.5px}
+  .table-wrap thead{display:none}
+  .table-wrap table,.table-wrap tbody,.table-wrap tr{display:block;width:100%}
+  .table-wrap tr:not(.sep-row){
+    background:var(--surface-2);border:1px solid var(--line);border-radius:12px;
+    padding:11px 13px;margin-bottom:9px;
+  }
+  .table-wrap tr.sep-row{background:none;border:0;padding:12px 2px 6px;margin:0;text-align:left}
+  .table-wrap tr.sep-row td{background:none;border:0;padding:0;white-space:normal}
+  .table-wrap td{
+    display:flex;justify-content:space-between;align-items:baseline;gap:10px;
+    padding:5px 0;border-top:1px solid var(--line);text-align:right;white-space:normal;
+  }
+  .table-wrap td:first-child{border-top:0;padding-top:0}
+  .table-wrap td[data-label]::before{
+    content:attr(data-label);color:var(--muted);font-size:10px;letter-spacing:.08em;
+    text-transform:uppercase;text-align:left;flex:none;margin-right:auto;padding-right:10px;
+  }
+  .table-wrap td>button.icon-btn{margin-left:auto}
+  /* células "ricas" (jogo/método com subtítulo) viram um bloco em vez de linha label:valor */
+  .table-wrap td.l{display:block;text-align:left}
+  .table-wrap td.l[data-label]::before{
+    content:attr(data-label);display:block;color:var(--muted);font-size:10px;letter-spacing:.08em;
+    text-transform:uppercase;margin-bottom:3px;
+  }
+  .table-wrap td.l .comp{text-align:left}
+}
+
 /* ---- charts ---- */
 .chart-box{position:relative;height:280px}
 .chart-box.sm{height:200px}
@@ -171,6 +203,15 @@ canvas{width:100%;height:100%;display:block}
 .cal-day.loss{background:linear-gradient(180deg,rgba(255,107,97,.16),rgba(255,107,97,.05));border-color:rgba(255,107,97,.32)}
 .cal-legend{display:flex;gap:14px;flex-wrap:wrap;color:var(--muted);font-size:11.5px;margin-top:12px}
 .cal-legend .dot{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px}
+
+@media(max-width:640px){
+  .cal-grid{gap:3px;min-width:0}
+  .cal-day{aspect-ratio:auto;min-height:40px;min-width:0;padding:3px 2px;border-radius:7px;overflow:hidden}
+  .cal-day .d{font-size:9.5px}
+  .cal-day .v{font-size:8px;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+  .cal-day .n{font-size:6.5px}
+  .cal-dow{font-size:8px;letter-spacing:.04em}
+}
 
 /* ---- rail (ciclos) ---- */
 .rail{position:relative;padding:20px 16px 14px;margin-bottom:16px;background:var(--surface);border:1px solid var(--line);
@@ -253,4 +294,55 @@ dialog::backdrop{background:rgba(5,9,14,.74);backdrop-filter:blur(3px)}
   .page-head h1{font-size:26px}
   .cal-day{min-height:48px;padding:4px}
   .cal-day .v{font-size:10px}
+}
+
+/* ============================================================
+   CELULAR — reconstruído a partir daqui: topbar compacta,
+   formulários em 1 coluna, cards mais justos.
+   ============================================================ */
+@media(max-width:640px){
+  main{padding:12px 10px 70px}
+  .card{padding:13px}
+  .page-head{gap:10px;margin-bottom:14px}
+  .page-head h1{font-size:22px}
+  .page-head p{font-size:12.5px}
+  .section-title h3{font-size:15px}
+
+  /* topbar */
+  .topbar{padding:8px 10px;gap:8px}
+  .brand .mark{width:28px;height:28px}
+  .brand b{font-size:16px}
+  .brand small{display:none}
+  .tabs{order:3;width:100%;max-width:none}
+  .topbar .right{order:2;width:100%;margin-left:0;gap:6px}
+  .right .pill-select{flex:1 1 auto;min-width:0;max-width:none}
+  .right .btn.sm{padding:6px 9px;font-size:10px}
+  #authBar{padding:10px 12px;font-size:12px}
+  #authBar span{flex-basis:100%}
+
+  /* stats */
+  .stats{grid-template-columns:1fr 1fr}
+  .stat{padding:11px 12px}
+  .stat b{font-size:16px}
+
+  /* forms */
+  .row.c2,.row.c3{grid-template-columns:1fr}
+  .vs{grid-template-columns:1fr;gap:4px}
+  .vs .x{display:none}
+  .dlg-body{padding:14px 16px;max-height:64vh}
+  .dlg-head{padding:13px 16px 10px}
+  .dlg-head h3{font-size:18px}
+  .dlg-foot{padding:12px 16px}
+  .kv{grid-template-columns:1fr;gap:2px 0}
+  .kv dt{padding-top:8px}
+  .kv dt:first-child{padding-top:0}
+
+  /* ciclos: trilha e cards */
+  .rail{padding:16px 12px 12px}
+  .station{min-width:104px}
+  .cycle-card h3{font-size:17px}
+  .figures{gap:12px}
+
+  /* rankings */
+  .rank-row{grid-template-columns:1fr 76px}
 }

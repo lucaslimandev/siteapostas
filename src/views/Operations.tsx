@@ -132,15 +132,15 @@ export default function Operations() {
             <tbody>
               {rows.map(({ o, cum: c }) => (
                 <tr className="clickable" key={o.id} onClick={() => openDetail(o.id)}>
-                  <td className="l mono">{fmtDate(o.date)}</td>
-                  <td className="l">
+                  <td className="l mono" data-label="Data">{fmtDate(o.date)}</td>
+                  <td className="l" data-label="Jogo">
                     {o.teamA || o.teamB ? `${o.teamA || '?'} × ${o.teamB || '?'}` : <span className="dim">sem jogo</span>}
                     <span className="comp">
                       {o.comp}
                       {o.market ? ' · ' + o.market : ''}
                     </span>
                   </td>
-                  <td className="l" style={{ fontSize: 12 }}>
+                  <td className="l" data-label="Método" style={{ fontSize: 12 }}>
                     {methodName(db.methods, o.methodId)}
                     {o.cycleId && (
                       <span className="chip on" style={{ marginLeft: 4 }}>
@@ -153,12 +153,12 @@ export default function Operations() {
                       </span>
                     )}
                   </td>
-                  <td className="mono">{o.stake ? money(o.stake) : '—'}</td>
-                  <td>
+                  <td className="mono" data-label="Stake">{o.stake ? money(o.stake) : '—'}</td>
+                  <td data-label="Resultado">
                     <ResultChip result={o.result} pnl={o.pnl} banca={banca} unit={unit} />
                   </td>
-                  <td className={'mono ' + cls(o.roi || 0)}>{o.roi == null ? '—' : pctS(o.roi, 1)}</td>
-                  <td className={'mono ' + cls(c)}>{fmtV(c, banca, unit)}</td>
+                  <td className={'mono ' + cls(o.roi || 0)} data-label="ROI">{o.roi == null ? '—' : pctS(o.roi, 1)}</td>
+                  <td className={'mono ' + cls(c)} data-label="Acumulado">{fmtV(c, banca, unit)}</td>
                   <td>
                     <button className="icon-btn" onClick={(e) => { e.stopPropagation(); openDetail(o.id); }}>
                       ›

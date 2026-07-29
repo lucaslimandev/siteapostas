@@ -187,8 +187,8 @@ export default function CycleDetail() {
                     if (row.orphan) {
                       return (
                         <tr className="clickable" key={row.entry.id} onClick={() => openDetail(row.entry.id)}>
-                          <td className="l">—</td>
-                          <td className="l">
+                          <td className="l" data-label="#">—</td>
+                          <td className="l" data-label="Jogo">
                             {row.entry.teamA || row.entry.teamB ? `${row.entry.teamA || '?'} × ${row.entry.teamB || '?'}` : 'sem jogo'}
                           </td>
                           <td colSpan={7} className="l dim">
@@ -211,23 +211,23 @@ export default function CycleDetail() {
                           </tr>
                         )}
                         <tr className="clickable" key={row.entry.id} onClick={() => openDetail(row.entry.id)}>
-                          <td className="l mono">{row.n}</td>
-                          <td className="l">
+                          <td className="l mono" data-label="#">{row.n}</td>
+                          <td className="l" data-label="Jogo">
                             {row.entry.teamA || row.entry.teamB ? `${row.entry.teamA || '?'} × ${row.entry.teamB || '?'}` : <span className="dim">sem jogo</span>}
                             <span className="comp">
                               {row.entry.comp}
                               {row.entry.market ? ' · ' + row.entry.market : ''}
                             </span>
                           </td>
-                          <td className="mono">{fmtDate(row.entry.date)}</td>
-                          <td className="mono">{pctS(row.pct!)}</td>
-                          <td className={'mono ' + cls(row.pctActual!)}>{(row.pctActual! > 0 ? '+' : '') + pctS(row.pctActual!)}</td>
-                          <td className={'mono ' + cls(row.pctDiff!)}>{(row.pctDiff! > 0 ? '+' : '') + pctS(row.pctDiff!)}</td>
-                          <td className="mono">{money(row.before!)}</td>
-                          <td>
+                          <td className="mono" data-label="Data">{fmtDate(row.entry.date)}</td>
+                          <td className="mono" data-label="Alvo">{pctS(row.pct!)}</td>
+                          <td className={'mono ' + cls(row.pctActual!)} data-label="Realizado">{(row.pctActual! > 0 ? '+' : '') + pctS(row.pctActual!)}</td>
+                          <td className={'mono ' + cls(row.pctDiff!)} data-label="Diferença">{(row.pctDiff! > 0 ? '+' : '') + pctS(row.pctDiff!)}</td>
+                          <td className="mono" data-label="Banca antes">{money(row.before!)}</td>
+                          <td data-label="Resultado">
                             <ResultChip result={row.entry.result} pnl={row.entry.pnl} banca={banca} unit={unit} />
                           </td>
-                          <td className="mono">
+                          <td className="mono" data-label="Banca depois">
                             {money(row.after!)}
                             {row.closes && (
                               <span className="chip win" style={{ marginLeft: 4 }}>
@@ -251,17 +251,17 @@ export default function CycleDetail() {
                       </tr>
                       {simRows.map((s) => (
                         <tr key={'sim' + s.n} className="dim" style={{ opacity: 0.6 }}>
-                          <td className="l mono">{s.n}</td>
-                          <td className="l dim">entrada simulada</td>
-                          <td className="mono">—</td>
-                          <td className="mono">{pctS(s.pct)}</td>
-                          <td className="mono">—</td>
-                          <td className="mono">—</td>
-                          <td className="mono">{money(s.before)}</td>
-                          <td>
+                          <td className="l mono" data-label="#">{s.n}</td>
+                          <td className="l dim" data-label="Jogo">entrada simulada</td>
+                          <td className="mono" data-label="Data">—</td>
+                          <td className="mono" data-label="Alvo">{pctS(s.pct)}</td>
+                          <td className="mono" data-label="Realizado">—</td>
+                          <td className="mono" data-label="Diferença">—</td>
+                          <td className="mono" data-label="Banca antes">{money(s.before)}</td>
+                          <td data-label="Resultado">
                             <span className="chip">alvo {money(s.target)}</span>
                           </td>
-                          <td className="mono">{money(s.after)}</td>
+                          <td className="mono" data-label="Banca depois">{money(s.after)}</td>
                           <td></td>
                         </tr>
                       ))}
@@ -305,14 +305,14 @@ export default function CycleDetail() {
                     const p = (sub.end || 0) - sub.start;
                     return (
                       <tr key={sub.index}>
-                        <td className="l mono">{sub.index}</td>
-                        <td className="mono">{money(sub.start)}</td>
-                        <td className="mono">{sub.rows.length}</td>
-                        <td className={'mono ' + cls(p)}>{money(p)}</td>
-                        <td className="mono">{money(sub.end || 0)}</td>
-                        <td className="mono">{sub.closed ? money(sub.take!) : '—'}</td>
-                        <td className="mono">{sub.closed ? money(sub.carry!) : '—'}</td>
-                        <td className="l">{sub.closed ? <span className="chip win">fechado</span> : <span className="chip on">em andamento</span>}</td>
+                        <td className="l mono" data-label="Ciclo">{sub.index}</td>
+                        <td className="mono" data-label="Início">{money(sub.start)}</td>
+                        <td className="mono" data-label="Entradas">{sub.rows.length}</td>
+                        <td className={'mono ' + cls(p)} data-label="Lucro">{money(p)}</td>
+                        <td className="mono" data-label="Montante">{money(sub.end || 0)}</td>
+                        <td className="mono" data-label="Saque">{sub.closed ? money(sub.take!) : '—'}</td>
+                        <td className="mono" data-label="Segue com">{sub.closed ? money(sub.carry!) : '—'}</td>
+                        <td className="l" data-label="Status">{sub.closed ? <span className="chip win">fechado</span> : <span className="chip on">em andamento</span>}</td>
                       </tr>
                     );
                   })}

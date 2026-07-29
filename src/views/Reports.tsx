@@ -80,15 +80,15 @@ export default function Reports() {
                   .reverse()
                   .map((o) => (
                     <tr className="clickable" key={o.id} onClick={() => openDetail(o.id)}>
-                      <td className="l mono">{fmtDate(o.date)}</td>
-                      <td className="l">{o.teamA || o.teamB ? `${o.teamA || '?'} × ${o.teamB || '?'}` : 'sem jogo'}</td>
-                      <td className="l" style={{ fontSize: 12 }}>
+                      <td className="l mono" data-label="Data">{fmtDate(o.date)}</td>
+                      <td className="l" data-label="Jogo">{o.teamA || o.teamB ? `${o.teamA || '?'} × ${o.teamB || '?'}` : 'sem jogo'}</td>
+                      <td className="l" data-label="Método" style={{ fontSize: 12 }}>
                         {methodName(db.methods, o.methodId)}
                       </td>
-                      <td className="mono neg">{money(o.stake)}</td>
-                      <td className="mono">{money(o.exp)}</td>
-                      <td className={'mono ' + cls(o.pnl)}>{fmtV(o.pnl, banca, unit)}</td>
-                      <td className={'mono ' + cls(o.adjPnl)}>{fmtV(o.adjPnl, banca, unit)}</td>
+                      <td className="mono neg" data-label="Stake usada">{money(o.stake)}</td>
+                      <td className="mono" data-label="Stake do método">{money(o.exp)}</td>
+                      <td className={'mono ' + cls(o.pnl)} data-label="Real">{fmtV(o.pnl, banca, unit)}</td>
+                      <td className={'mono ' + cls(o.adjPnl)} data-label="No método">{fmtV(o.adjPnl, banca, unit)}</td>
                     </tr>
                   ))}
               </tbody>
@@ -128,15 +128,15 @@ export default function Reports() {
                   const d = m.adj - m.pnl;
                   return (
                     <tr key={m.key}>
-                      <td className="l">{name}</td>
-                      <td className="mono">{m.n}</td>
-                      <td className="mono">{pctS(m.hit, 0)}</td>
-                      <td className="mono">{money(m.stake)}</td>
-                      <td className={'mono ' + cls(m.pnl)}>{fmtV(m.pnl, banca, unit)}</td>
-                      <td className={'mono ' + cls(m.roi || 0)}>{m.roi == null ? '—' : pctS(m.roi, 1)}</td>
-                      <td className={'mono ' + cls(m.units)}>{(m.units > 0 ? '+' : '') + un(m.units)}</td>
-                      <td className={'mono ' + (m.off ? 'neg' : 'dim')}>{m.off}</td>
-                      <td className={'mono ' + cls(m.adj)}>{d ? fmtV(m.adj, banca, unit) : '—'}</td>
+                      <td className="l" data-label="Método">{name}</td>
+                      <td className="mono" data-label="Ops">{m.n}</td>
+                      <td className="mono" data-label="Acerto">{pctS(m.hit, 0)}</td>
+                      <td className="mono" data-label="Stake total">{money(m.stake)}</td>
+                      <td className={'mono ' + cls(m.pnl)} data-label="Resultado">{fmtV(m.pnl, banca, unit)}</td>
+                      <td className={'mono ' + cls(m.roi || 0)} data-label="ROI">{m.roi == null ? '—' : pctS(m.roi, 1)}</td>
+                      <td className={'mono ' + cls(m.units)} data-label="Unidades">{(m.units > 0 ? '+' : '') + un(m.units)}</td>
+                      <td className={'mono ' + (m.off ? 'neg' : 'dim')} data-label="Fora do método">{m.off}</td>
+                      <td className={'mono ' + cls(m.adj)} data-label="Se disciplinado">{d ? fmtV(m.adj, banca, unit) : '—'}</td>
                     </tr>
                   );
                 })
@@ -175,11 +175,11 @@ export default function Reports() {
                 {comps.length ? (
                   comps.map((c) => (
                     <tr key={c.key}>
-                      <td className="l">{c.key}</td>
-                      <td className="mono">{c.n}</td>
-                      <td className="mono">{pctS(c.hit, 0)}</td>
-                      <td className={'mono ' + cls(c.pnl)}>{fmtV(c.pnl, banca, unit)}</td>
-                      <td className={'mono ' + cls(c.roi || 0)}>{c.roi == null ? '—' : pctS(c.roi, 1)}</td>
+                      <td className="l" data-label="Competição">{c.key}</td>
+                      <td className="mono" data-label="Ops">{c.n}</td>
+                      <td className="mono" data-label="Acerto">{pctS(c.hit, 0)}</td>
+                      <td className={'mono ' + cls(c.pnl)} data-label="Resultado">{fmtV(c.pnl, banca, unit)}</td>
+                      <td className={'mono ' + cls(c.roi || 0)} data-label="ROI">{c.roi == null ? '—' : pctS(c.roi, 1)}</td>
                     </tr>
                   ))
                 ) : (
@@ -213,11 +213,11 @@ export default function Reports() {
                 {teams.length ? (
                   teams.map((t) => (
                     <tr key={t.key}>
-                      <td className="l">{t.key}</td>
-                      <td className="mono">{t.n}</td>
-                      <td className="mono">{pctS(t.hit, 0)}</td>
-                      <td className={'mono ' + cls(t.pnl)}>{fmtV(t.pnl, banca, unit)}</td>
-                      <td className={'mono ' + cls(t.roi || 0)}>{t.roi == null ? '—' : pctS(t.roi, 1)}</td>
+                      <td className="l" data-label="Time">{t.key}</td>
+                      <td className="mono" data-label="Ops">{t.n}</td>
+                      <td className="mono" data-label="Acerto">{pctS(t.hit, 0)}</td>
+                      <td className={'mono ' + cls(t.pnl)} data-label="Resultado">{fmtV(t.pnl, banca, unit)}</td>
+                      <td className={'mono ' + cls(t.roi || 0)} data-label="ROI">{t.roi == null ? '—' : pctS(t.roi, 1)}</td>
                     </tr>
                   ))
                 ) : (
