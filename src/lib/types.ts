@@ -35,6 +35,8 @@ export interface Op {
   pnl: number;
   note: string;
   seq: number;
+  /** Market Id do extrato, quando a operação veio de uma importação — evita duplicar no futuro. */
+  sourceMarketId?: string;
 }
 
 export interface Cycle {
@@ -66,6 +68,8 @@ export interface Db {
   teams: string[];
   comps: string[];
   settings: Settings;
+  /** Market Ids de extratos já importados — impede reimportar a mesma aposta. */
+  importedMarketIds: string[];
 }
 
 /** Operação com campos derivados pelo motor de cálculo (enrich). */

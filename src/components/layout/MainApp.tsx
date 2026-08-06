@@ -18,6 +18,7 @@ import CycleDialog from '../dialogs/CycleDialog';
 import MethodDialog from '../dialogs/MethodDialog';
 import BancaDialog from '../dialogs/BancaDialog';
 import AccountDialog from '../dialogs/AccountDialog';
+import ImportStatementDialog from '../dialogs/ImportStatementDialog';
 
 export default function MainApp() {
   const view = useUiStore((s) => s.view);
@@ -54,6 +55,7 @@ export default function MainApp() {
       <MethodDialog />
       <BancaDialog />
       <AccountDialog />
+      <ImportStatementDialog />
     </>
   );
 }

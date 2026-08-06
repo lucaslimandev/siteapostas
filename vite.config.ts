@@ -16,6 +16,7 @@ export default defineConfig({
         manualChunks: {
           firebase: ['firebase/app', 'firebase/auth', 'firebase/firestore'],
           react: ['react', 'react-dom'],
+          xlsx: ['xlsx'],
         },
       },
     },

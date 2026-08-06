@@ -73,7 +73,16 @@ export function useCloudSync(): CloudSync {
         });
         synced.current[col] = cur;
       });
-      const meta = { activeBanca: db.activeBanca, settings: db.settings, teams: db.teams, comps: db.comps, tutorialSeen: tutorialSeenRef.current, email: u.email, updatedAt: Date.now() };
+      const meta = {
+        activeBanca: db.activeBanca,
+        settings: db.settings,
+        teams: db.teams,
+        comps: db.comps,
+        tutorialSeen: tutorialSeenRef.current,
+        importedMarketIds: db.importedMarketIds,
+        email: u.email,
+        updatedAt: Date.now(),
+      };
       const mj = JSON.stringify(meta);
       if (mj !== synced.current.meta) {
         jobs.push({ t: 'meta' });
@@ -145,10 +154,20 @@ export function useCloudSync(): CloudSync {
           if (v.settings) db.settings = v.settings;
           if (Array.isArray(v.teams)) db.teams = v.teams;
           if (Array.isArray(v.comps)) db.comps = v.comps;
+          if (Array.isArray(v.importedMarketIds)) db.importedMarketIds = v.importedMarketIds;
           const seen = v.tutorialSeen === true;
           tutorialSeenRef.current = seen;
           setTutorialSeen(seen);
-          synced.current.meta = JSON.stringify({ activeBanca: db.activeBanca, settings: db.settings, teams: db.teams, comps: db.comps, tutorialSeen: seen, email: userRef.current?.email, updatedAt: v.updatedAt });
+          synced.current.meta = JSON.stringify({
+            activeBanca: db.activeBanca,
+            settings: db.settings,
+            teams: db.teams,
+            comps: db.comps,
+            tutorialSeen: seen,
+            importedMarketIds: db.importedMarketIds,
+            email: userRef.current?.email,
+            updatedAt: v.updatedAt,
+          });
           useDbStore.getState().applyRemote(db);
         })
       );

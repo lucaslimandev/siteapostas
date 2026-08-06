@@ -2,7 +2,7 @@ import type { Db } from './types';
 import { uid } from './format';
 
 export function BLANK(): Db {
-  return { v: 2, bancas: [], activeBanca: null, methods: [], ops: [], cycles: [], teams: [], comps: [], settings: { unit: 'money' } };
+  return { v: 2, bancas: [], activeBanca: null, methods: [], ops: [], cycles: [], teams: [], comps: [], settings: { unit: 'money' }, importedMarketIds: [] };
 }
 
 export function freshAccount(): Db {

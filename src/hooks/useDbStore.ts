@@ -39,6 +39,8 @@ interface DbState {
   removeRegistryItem: (list: 'teams' | 'comps', val: string) => void;
 
   importDb: (incoming: Db) => void;
+  /** Cria várias operações de uma vez (importação de extrato) e marca os Market Ids como já importados. */
+  importStatementBets: (entries: Array<Omit<Op, 'id' | 'bancaId' | 'seq'>>, marketIds: string[]) => void;
 }
 
 function remember(db: Db, list: 'teams' | 'comps', val: string) {
@@ -171,6 +173,22 @@ export const useDbStore = create<DbState>((set, get) => ({
       db.activeBanca = db.bancas[0].id;
     }
     if (!db.activeBanca) db.activeBanca = db.bancas[0].id;
+    commit(set, get, db);
+  },
+
+  importStatementBets: (entries, marketIds) => {
+    const db = get().db;
+    const newOps = entries.map((data, idx) => {
+      const op: Op = { ...data, id: uid(), bancaId: db.activeBanca!, seq: Date.now() + idx };
+      remember(db, 'teams', op.teamA);
+      remember(db, 'teams', op.teamB);
+      remember(db, 'comps', op.comp);
+      return op;
+    });
+    db.ops = [...db.ops, ...newOps];
+    const merged = new Set(db.importedMarketIds);
+    marketIds.forEach((id) => merged.add(id));
+    db.importedMarketIds = [...merged];
     commit(set, get, db);
   },
 }));

@@ -6,7 +6,8 @@ import type { Unit } from '../../lib/types';
 import { todayISO } from '../../lib/format';
 import { toast } from '../../hooks/useToast';
 import { useCloud } from '../../hooks/useCloudContext';
-import { gate, useAccountDialogStore, useAuthDialogStore } from '../../hooks/useDialogs';
+import { gate, useAccountDialogStore, useAuthDialogStore, useImportStatementStore } from '../../hooks/useDialogs';
+import { parseStatementFile } from '../../lib/statementImport';
 
 const TABS: { view: View; label: string }[] = [
   { view: 'dash', label: 'Painel' },
@@ -32,9 +33,11 @@ export default function Topbar() {
   const setActiveBanca = useDbStore((s) => s.setActiveBanca);
   const setUnit = useDbStore((s) => s.setUnit);
   const importDb = useDbStore((s) => s.importDb);
+  const openImportStatement = useImportStatementStore((s) => s.openWith);
   const view = useUiStore((s) => s.view);
   const showView = useUiStore((s) => s.showView);
   const fileRef = useRef<HTMLInputElement>(null);
+  const statementRef = useRef<HTMLInputElement>(null);
 
   const activeKey = view === 'cycle' ? 'cycles' : view;
 
@@ -65,6 +68,24 @@ export default function Topbar() {
     };
     rd.readAsText(f);
     e.target.value = '';
+  }
+
+  async function handleStatementFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const f = e.target.files?.[0];
+    e.target.value = '';
+    if (!f) return;
+    try {
+      const buffer = await f.arrayBuffer();
+      const bets = await parseStatementFile(buffer, db.importedMarketIds);
+      if (!bets.length) {
+        toast('Não encontrei nenhuma aposta nesse arquivo.');
+        return;
+      }
+      openImportStatement(bets);
+    } catch (err) {
+      console.error(err);
+      toast('Não consegui ler esse arquivo — confira se é o extrato exportado da corretora (.xlsx).');
+    }
   }
 
   return (
@@ -113,6 +134,10 @@ export default function Topbar() {
             Importar
           </button>
           <input ref={fileRef} type="file" accept="application/json" hidden onChange={handleImportFile} />
+          <button className="btn ghost sm" onClick={() => gate(cloud.locked, () => statementRef.current?.click(), 'Crie sua conta para importar seu extrato.')}>
+            Importar extrato
+          </button>
+          <input ref={statementRef} type="file" accept=".xlsx,.xls" hidden onChange={handleStatementFile} />
         </div>
       </header>
 

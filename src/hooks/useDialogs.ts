@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import type { Banca, Cycle, Method, Op } from '../lib/types';
+import type { ParsedBet } from '../lib/statementImport';
 
 interface OpDialogState {
   open: boolean;
@@ -99,6 +100,20 @@ export const useAccountDialogStore = create<AccountDialogState>((set) => ({
   open: false,
   openAccount: () => set({ open: true }),
   close: () => set({ open: false }),
+}));
+
+interface ImportStatementState {
+  open: boolean;
+  bets: ParsedBet[];
+  openWith: (bets: ParsedBet[]) => void;
+  close: () => void;
+}
+
+export const useImportStatementStore = create<ImportStatementState>((set) => ({
+  open: false,
+  bets: [],
+  openWith: (bets) => set({ open: true, bets }),
+  close: () => set({ open: false, bets: [] }),
 }));
 
 /**

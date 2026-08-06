@@ -1,6 +1,6 @@
 import { useEffect, useRef, type ReactNode } from 'react';
 
-export default function Modal({ open, onClose, children }: { open: boolean; onClose: () => void; children: ReactNode }) {
+export default function Modal({ open, onClose, children, className }: { open: boolean; onClose: () => void; children: ReactNode; className?: string }) {
   const ref = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
@@ -22,5 +22,9 @@ export default function Modal({ open, onClose, children }: { open: boolean; onCl
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  return <dialog ref={ref}>{open ? children : null}</dialog>;
+  return (
+    <dialog ref={ref} className={className}>
+      {open ? children : null}
+    </dialog>
+  );
 }
