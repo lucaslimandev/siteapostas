@@ -44,6 +44,8 @@ export default function Cycles() {
           {list.map((c) => {
             const r = computeCycle(c, db.ops);
             const prog = r.active ? Math.max(0, Math.min(1, (r.bank - r.active.start) / (r.active.start || 1))) : 1;
+            const activeProfit = r.active ? r.bank - r.active.start : 0;
+            const nextTarget = r.finished ? null : (r.bank * r.nextPct) / 100;
             return (
               <article key={c.id} className="card cycle-card" tabIndex={0} onClick={() => openCycle(c.id)}>
                 <div className="card-actions">
@@ -71,11 +73,19 @@ export default function Cycles() {
                     <span>{money(r.bank)}</span>
                   </div>
                   <div className="fig">
+                    <small>Lucro do ciclo atual</small>
+                    <span className={cls(activeProfit)}>{r.active ? money(activeProfit) : '—'}</span>
+                  </div>
+                  <div className="fig">
+                    <small>Próxima entrada</small>
+                    <span>{nextTarget != null ? money(nextTarget) : '—'}</span>
+                  </div>
+                  <div className="fig">
                     <small>Sacado</small>
                     <span>{money(r.withdrawn)}</span>
                   </div>
                   <div className="fig">
-                    <small>Resultado</small>
+                    <small>Resultado total</small>
                     <span className={cls(r.profit)}>{money(r.profit)}</span>
                   </div>
                 </div>

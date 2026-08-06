@@ -76,6 +76,13 @@ export default function Dashboard() {
     return top.filter((t) => !seen.has(t.key) && seen.add(t.key)).map((t) => ({ label: t.key, sub: `${t.n} ops`, value: t.pnl }));
   }, [enriched, banca]);
 
+  const compRank = useMemo(() => {
+    const comps = groupBy(enriched, (o) => [o.comp || '(sem competição)'], banca).sort((a, b) => b.pnl - a.pnl);
+    const top = [...comps.slice(0, 4), ...comps.slice(-3).filter((c) => c.pnl < 0)];
+    const seen = new Set<string>();
+    return top.filter((c) => !seen.has(c.key) && seen.add(c.key)).map((c) => ({ label: c.key, sub: `${c.n} ops · ${pctS(c.hit, 0)} acerto`, value: c.pnl }));
+  }, [enriched, banca]);
+
   const last = enriched.slice(-6).reverse();
 
   if (!banca) return null;
@@ -239,6 +246,13 @@ export default function Dashboard() {
               <span className="chip">melhores e piores</span>
             </div>
             <RankList items={teamRank} banca={banca} unit={unit} />
+          </div>
+          <div className="card">
+            <div className="section-title">
+              <h3>Competições</h3>
+              <span className="chip">melhores e piores</span>
+            </div>
+            <RankList items={compRank} banca={banca} unit={unit} />
           </div>
         </div>
       </div>

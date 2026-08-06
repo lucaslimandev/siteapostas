@@ -37,6 +37,8 @@ export interface Op {
   seq: number;
   /** Market Id do extrato, quando a operação veio de uma importação — evita duplicar no futuro. */
   sourceMarketId?: string;
+  /** Decisão manual, tomada no cadastro: essa entrada conta como fora do método/ciclo no relatório de disciplina. */
+  offMethod?: boolean;
 }
 
 export interface Cycle {

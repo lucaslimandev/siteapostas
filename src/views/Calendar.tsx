@@ -138,7 +138,7 @@ export default function CalendarView() {
                   <div
                     key={o.id}
                     onClick={() => openDetail(o.id)}
-                    style={{ display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'center', padding: 10, border: '1px solid var(--line)', borderRadius: 10, cursor: 'pointer' }}
+                    style={{ display: 'flex', justifyContent: 'space-between', gap: 10, alignItems: 'center', padding: 10, border: '1px solid var(--line)', borderRadius: 10, cursor: 'pointer', minWidth: 0 }}
                   >
                     <div style={{ minWidth: 0 }}>
                       <div style={{ fontSize: 13.5, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>

@@ -43,7 +43,9 @@ export function enrich(ops: Op[], banca: Banca | undefined, methods: Method[], c
     const exp = cycleExp != null ? cycleExp : expectedStake(m, banca, bank);
     const stake = Number(o.stake) || 0;
     const tol = cycleExp != null ? (m ? Number(m.tolerance) || 0 : 5) : m ? Number(m.tolerance) || 0 : 0;
-    const off = !!(exp > 0 && stake > 0 && stake > exp * (1 + tol / 100));
+    // "Fora do método/ciclo" é uma escolha feita no cadastro da operação, não decidida pela stake.
+    // Operações antigas (sem a marcação explícita) caem no cálculo automático anterior, por compatibilidade.
+    const off = typeof o.offMethod === 'boolean' ? o.offMethod : !!(exp > 0 && stake > 0 && stake > exp * (1 + tol / 100));
     const adjPnl = off ? o.pnl * (exp / stake) : o.pnl;
     const before = bank;
     bank += o.pnl;

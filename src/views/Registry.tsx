@@ -1,8 +1,22 @@
+import { useMemo, useState } from 'react';
 import { useDbStore } from '../hooks/useDbStore';
 import { useBancaDialogStore, gate } from '../hooks/useDialogs';
 import { useCloud } from '../hooks/useCloudContext';
+import { useBancaData } from '../hooks/useBancaData';
 import { cls, money } from '../lib/format';
 import { toast } from '../hooks/useToast';
+
+interface RegistryRow {
+  name: string;
+  n: number;
+  pnl: number;
+}
+
+function buildRows(names: string[], countOf: (name: string) => { n: number; pnl: number }): RegistryRow[] {
+  return names
+    .map((name) => ({ name, ...countOf(name) }))
+    .sort((a, b) => b.n - a.n || a.name.localeCompare(b.name, 'pt-BR'));
+}
 
 export default function Registry() {
   const db = useDbStore((s) => s.db);
@@ -12,6 +26,10 @@ export default function Registry() {
   const removeRegistryItem = useDbStore((s) => s.removeRegistryItem);
   const openBancaDialog = useBancaDialogStore((s) => s.openBancaDialog);
   const cloud = useCloud();
+  const { enriched } = useBancaData();
+
+  const [teamFilter, setTeamFilter] = useState('');
+  const [compFilter, setCompFilter] = useState('');
 
   function handleDeleteBanca(id: string) {
     if (window.confirm('Excluir esta banca e TODAS as operações e ciclos dela?')) {
@@ -24,6 +42,24 @@ export default function Registry() {
     const v = window.prompt(list === 'teams' ? 'Nome do time' : 'Nome da competição');
     if (v && v.trim()) remember(list, v.trim());
   }
+
+  const teamRows = useMemo(() => {
+    const rows = buildRows(db.teams, (name) => {
+      const ops = enriched.filter((o) => o.teamA === name || o.teamB === name);
+      return { n: ops.length, pnl: ops.reduce((s, o) => s + o.pnl, 0) };
+    });
+    const f = teamFilter.trim().toLowerCase();
+    return f ? rows.filter((r) => r.name.toLowerCase().includes(f)) : rows;
+  }, [db.teams, enriched, teamFilter]);
+
+  const compRows = useMemo(() => {
+    const rows = buildRows(db.comps, (name) => {
+      const ops = enriched.filter((o) => o.comp === name);
+      return { n: ops.length, pnl: ops.reduce((s, o) => s + o.pnl, 0) };
+    });
+    const f = compFilter.trim().toLowerCase();
+    return f ? rows.filter((r) => r.name.toLowerCase().includes(f)) : rows;
+  }, [db.comps, enriched, compFilter]);
 
   return (
     <section className="view">
@@ -103,20 +139,54 @@ export default function Registry() {
               + Adicionar
             </button>
           </div>
-          <div className="tag-cloud">
-            {db.teams.length ? (
-              db.teams.map((t) => (
-                <span className="tag" key={t}>
-                  {t}
-                  <button onClick={() => gate(cloud.locked, () => removeRegistryItem('teams', t))}>✕</button>
-                </span>
-              ))
-            ) : (
-              <span className="dim" style={{ fontSize: 13 }}>
-                Nada salvo ainda — o que você digitar nas operações aparece aqui.
-              </span>
-            )}
-          </div>
+          {db.teams.length ? (
+            <>
+              <input
+                className="registry-search"
+                placeholder="Buscar time..."
+                value={teamFilter}
+                onChange={(e) => setTeamFilter(e.target.value)}
+              />
+              <div className="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th className="l">Time</th>
+                      <th>Operações</th>
+                      <th>Resultado</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {teamRows.length ? (
+                      teamRows.map((t) => (
+                        <tr key={t.name}>
+                          <td className="l" data-label="Time">{t.name}</td>
+                          <td className="mono" data-label="Operações">{t.n}</td>
+                          <td className={'mono ' + (t.n ? cls(t.pnl) : 'dim')} data-label="Resultado">{t.n ? money(t.pnl) : '—'}</td>
+                          <td>
+                            <button className="icon-btn danger" onClick={() => gate(cloud.locked, () => removeRegistryItem('teams', t.name))}>
+                              ✕
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={4} className="l dim" style={{ padding: '14px 0' }}>
+                          Nenhum time encontrado para "{teamFilter}".
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          ) : (
+            <span className="dim" style={{ fontSize: 13 }}>
+              Nada salvo ainda — o que você digitar nas operações aparece aqui.
+            </span>
+          )}
         </div>
         <div className="card">
           <div className="section-title">
@@ -125,20 +195,54 @@ export default function Registry() {
               + Adicionar
             </button>
           </div>
-          <div className="tag-cloud">
-            {db.comps.length ? (
-              db.comps.map((c) => (
-                <span className="tag" key={c}>
-                  {c}
-                  <button onClick={() => gate(cloud.locked, () => removeRegistryItem('comps', c))}>✕</button>
-                </span>
-              ))
-            ) : (
-              <span className="dim" style={{ fontSize: 13 }}>
-                Nada salvo ainda — o que você digitar nas operações aparece aqui.
-              </span>
-            )}
-          </div>
+          {db.comps.length ? (
+            <>
+              <input
+                className="registry-search"
+                placeholder="Buscar competição..."
+                value={compFilter}
+                onChange={(e) => setCompFilter(e.target.value)}
+              />
+              <div className="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th className="l">Competição</th>
+                      <th>Operações</th>
+                      <th>Resultado</th>
+                      <th></th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {compRows.length ? (
+                      compRows.map((c) => (
+                        <tr key={c.name}>
+                          <td className="l" data-label="Competição">{c.name}</td>
+                          <td className="mono" data-label="Operações">{c.n}</td>
+                          <td className={'mono ' + (c.n ? cls(c.pnl) : 'dim')} data-label="Resultado">{c.n ? money(c.pnl) : '—'}</td>
+                          <td>
+                            <button className="icon-btn danger" onClick={() => gate(cloud.locked, () => removeRegistryItem('comps', c.name))}>
+                              ✕
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={4} className="l dim" style={{ padding: '14px 0' }}>
+                          Nenhuma competição encontrada para "{compFilter}".
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          ) : (
+            <span className="dim" style={{ fontSize: 13 }}>
+              Nada salvo ainda — o que você digitar nas operações aparece aqui.
+            </span>
+          )}
         </div>
       </div>
     </section>

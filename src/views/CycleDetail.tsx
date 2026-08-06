@@ -35,6 +35,8 @@ export default function CycleDetail() {
   const hit = r.greens + r.reds ? (r.greens / (r.greens + r.reds)) * 100 : 0;
   const left = entriesLeft(c, r);
   const simRows = simulateRemaining(c, r);
+  const activeProfit = r.active ? r.bank - r.active.start : 0;
+  const nextTarget = r.finished ? null : (r.bank * r.nextPct) / 100;
 
   function handleDelete() {
     if (window.confirm(`Excluir "${c!.name}"? As operações continuam na banca, apenas desvinculadas.`)) {
@@ -70,9 +72,10 @@ export default function CycleDetail() {
         <Stat label="Valor inicial" value={money(c.initial)} />
         <Stat label="Banca do ciclo" value={money(r.bank)} />
         <Stat label="Meta deste ciclo" value={r.active ? money(r.active.start * 2) : '—'} />
+        <Stat label="Lucro do ciclo atual" value={r.active ? money(activeProfit) : '—'} valueClass={r.active ? cls(activeProfit) : undefined} sub="desde a última virada" />
         <Stat label="Total sacado" value={money(r.withdrawn)} valueClass="pos" />
         <Stat label="Patrimônio" value={money(r.total)} />
-        <Stat label="Resultado" value={money(r.profit)} valueClass={cls(r.profit)} />
+        <Stat label="Resultado total" value={money(r.profit)} valueClass={cls(r.profit)} sub="desde o início do ciclo" />
         <Stat label="Aproveitamento" value={pctS(hit, 1)} />
       </div>
 
@@ -125,13 +128,13 @@ export default function CycleDetail() {
           ) : (
             <div className="next-target">
               <div className="t">
-                <b>{pctS(r.nextPct)}</b>
+                <b>{money(nextTarget!)}</b>
                 <span>
-                  entrada {r.local + 1} · ciclo {r.idx}
+                  quanto ganhar na entrada {r.local + 1} · ciclo {r.idx}
                 </span>
               </div>
               <div className="sub">
-                lucro alvo {money((r.bank * r.nextPct) / 100)} · banca {money(r.bank)}
+                {pctS(r.nextPct)} sobre a banca do ciclo ({money(r.bank)})
               </div>
               <div className="sub dim">{left != null ? `faltam ~${left} greens para fechar o ciclo ${r.idx}` : 'ajuste os parâmetros para fechar'}</div>
             </div>

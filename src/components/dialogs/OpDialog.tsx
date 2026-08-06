@@ -27,6 +27,7 @@ export default function OpDialog() {
   const [oddStr, setOddStr] = useState('');
   const [valueStr, setValueStr] = useState('');
   const [note, setNote] = useState('');
+  const [offMethod, setOffMethod] = useState(false);
 
   const cyc = cycleId ? db.cycles.find((c) => c.id === cycleId) : null;
   const bank = banca ? banca.initial + enriched.reduce((s, o) => s + o.pnl, 0) : 0;
@@ -52,6 +53,7 @@ export default function OpDialog() {
     setValueStr(op ? Math.abs(op.pnl).toFixed(2).replace('.', ',') : '');
     setNote(op?.note || '');
     setResult(op ? op.result : 'green');
+    setOffMethod(op?.offMethod ?? false);
 
     if (!op && banca && cyc) {
       const r = computeCycle(cyc, db.ops);
@@ -87,19 +89,18 @@ export default function OpDialog() {
 
   function stakeHint(): string {
     if (cycleExp != null) {
-      const stake = parseNum(stakeStr);
       const tol = method ? Number(method.tolerance) || 0 : 5;
-      if (stake > cycleExp * (1 + tol / 100) && stake > 0) {
-        return `Fora do ciclo: o alvo desta entrada é ${money(cycleExp)} (+${pctS(tol, 0)} de tolerância). Vai entrar no relatório de disciplina.`;
-      }
       return `Alvo do ciclo: ${money(cycleExp)} · tolerância ${pctS(tol, 0)}.`;
     }
-    if (!method || !(Number(method.stakeValue) > 0) || !banca) return 'Sem stake definida para este método — a operação não entra no controle de disciplina.';
+    if (!method || !(Number(method.stakeValue) > 0) || !banca) return 'Sem stake definida para este método — marque abaixo se quiser contar esta entrada como fora do método.';
     const exp = expectedStake(method, banca, bank);
-    const stake = parseNum(stakeStr);
     const tol = Number(method.tolerance) || 0;
-    if (stake > exp * (1 + tol / 100) && stake > 0) return `Fora do método: a stake de ${method.name} é ${money(exp)} (+${pctS(tol, 0)} de tolerância). Vai entrar no relatório de disciplina.`;
     return `Stake do método: ${money(exp)} · tolerância ${pctS(tol, 0)}.`;
+  }
+
+  function showOffToggle(): boolean {
+    if (cycleExp != null) return true;
+    return !!(method && Number(method.stakeValue) > 0 && banca);
   }
 
   function handleSubmit(e: React.FormEvent) {
@@ -117,6 +118,7 @@ export default function OpDialog() {
       result,
       pnl: result === 'green' ? raw : result === 'red' ? -raw : 0,
       note: note.trim(),
+      offMethod: showOffToggle() ? offMethod : false,
     };
     if (editingOp) updateOp(editingOp.id, data);
     else addOp(data, cycleId);
@@ -143,13 +145,13 @@ export default function OpDialog() {
           {cycResult && !editingOp && !cycResult.finished && (
             <div className="next-target">
               <div className="t">
-                <b>{pctS(cycResult.nextPct)}</b>
+                <b>{money((cycResult.bank * cycResult.nextPct) / 100)}</b>
                 <span>
-                  ciclo {cycResult.idx} · entrada {cycResult.local + 1}
+                  quanto ganhar · ciclo {cycResult.idx} · entrada {cycResult.local + 1}
                 </span>
               </div>
               <div className="sub">
-                lucro alvo {money((cycResult.bank * cycResult.nextPct) / 100)} sobre {money(cycResult.bank)}
+                {pctS(cycResult.nextPct)} sobre a banca do ciclo ({money(cycResult.bank)})
               </div>
             </div>
           )}
@@ -244,6 +246,13 @@ export default function OpDialog() {
             </label>
           </div>
           <div className="hint">{stakeHint()}</div>
+
+          {showOffToggle() && (
+            <label className="field" style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+              <input type="checkbox" checked={offMethod} onChange={(e) => setOffMethod(e.target.checked)} style={{ width: 'auto' }} />
+              <span>Marcar como fora do {cyc ? 'ciclo' : 'método'} (você decide — entra no relatório de disciplina)</span>
+            </label>
+          )}
 
           <label className="field">
             <span>Observação — por que entrou, por que fechou, o que errou</span>

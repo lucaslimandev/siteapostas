@@ -78,7 +78,7 @@ export default function ImportStatementDialog() {
   }
 
   function handleConfirm() {
-    const toImport = drafts.filter((d) => d.selected && !d.alreadyImported);
+    const toImport = drafts.filter((d) => d.selected);
     if (!toImport.length) {
       toast('Nenhuma aposta selecionada.');
       return;
@@ -121,7 +121,7 @@ export default function ImportStatementDialog() {
           </span>
           {dupCount > 0 && (
             <span className="dim">
-              <b>{dupCount}</b> já importada{dupCount !== 1 ? 's' : ''} antes — bloqueada{dupCount !== 1 ? 's' : ''}
+              <b>{dupCount}</b> já importada{dupCount !== 1 ? 's' : ''} antes — desmarcada{dupCount !== 1 ? 's' : ''} por padrão, marque se quiser importar de novo
             </span>
           )}
         </div>
@@ -136,7 +136,6 @@ export default function ImportStatementDialog() {
                   <input
                     type="checkbox"
                     checked={d.selected}
-                    disabled={d.alreadyImported}
                     onChange={(e) => patch(d.key, { selected: e.target.checked })}
                   />
                   <div className="import-row-main">
